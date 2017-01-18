@@ -1,4 +1,5 @@
 /* Codes des mots-clefs */
+#define INCONNU 0
 #define POINT_VIRGULE 1
 #define PLUS 2
 #define MOINS 3
@@ -33,5 +34,3 @@
 #define NOMBRE 28
 #define FIN 29
 #define VIRGULE 30
-
-
