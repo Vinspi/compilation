@@ -2,10 +2,10 @@
 #define __LIRE_UNITE__
 #define YYTEXT_MAX 99
 
-#include "stdio.h"
+#include <stdio.h>
+#include <stdlib.h>
 
 int yylex(void);
-void nom_token( int token, char *nom, char *valeur );
 void test_yylex_internal( FILE *yyin );
-
+void affiche_token(int token);
 #endif
