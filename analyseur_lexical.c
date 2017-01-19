@@ -3,9 +3,6 @@
 #include <stdio.h>
 #include <string.h>
 
-char yytext[YYTEXT_MAX];
-int yyleng;
-FILE *yyin;
 
 int mangeEspaces()
 {
@@ -245,7 +242,7 @@ void test_yylex() {
   } while (uniteCourante != FIN);
 }
 
-
+/*
 int main(int argc, char const *argv[]) {
 
   yyin = fopen("test.l","r");
@@ -254,3 +251,4 @@ int main(int argc, char const *argv[]) {
 
   return 0;
 }
+*/

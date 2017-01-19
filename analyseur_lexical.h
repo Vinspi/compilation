@@ -8,4 +8,9 @@
 int yylex(void);
 void test_yylex_internal( FILE *yyin );
 void affiche_token(int token);
+
+char yytext[YYTEXT_MAX];
+int yyleng;
+FILE *yyin;
+
 #endif
