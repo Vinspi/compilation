@@ -11,7 +11,7 @@ ATTENTION !
 
 /* grammaire :
   EBOOLEAN -> COMPARAISON ou EBOOLEAN | COMPARAISON & EBOOLEAN | !COMPARAISON | COMPARAISON ***** à implementer *****
-  COMPARAISON -> EXPRESSION < EXPRESSION | EXPRESSION > EXPRESSION | EXPRESSION = EXPRESSION | EXPRESSION >= EXPRESSION | EXPRESSION <= EXPRESSION | E ***** à implementer *****
+  COMPARAISON -> EXPRESSION < EXPRESSION | EXPRESSION > EXPRESSION | EXPRESSION = EXPRESSION | EXPRESSION >= EXPRESSION | EXPRESSION <= EXPRESSION | EXPRESSION != EXPRESSION | E ***** à implementer *****
   EXPRESSION -> T ADDITION
   ADDITION -> +EXPRESSION | -EXPRESSION | epsilon
   T -> FOIS TP
@@ -29,6 +29,33 @@ void EXPRESSION(){
 void T(){
   fois();
   TP();
+}
+
+void COMPARAISON(){
+    EXPRESSION();
+    if(uniteCourante == INFERIEUR || uniteCourante == SUPERIEUR){
+      uniteCourante = yylex();
+      if(uniteCourante == EGAL)
+        uniteCourante = yylex();
+        //EXPRESSION();
+    }
+    else if(uniteCourante == NON){
+      uniteCourante = yylex();
+      if(uniteCourante == EGAL){
+        uniteCourante = yylex();
+      }
+      //EXPRESSION();
+    }
+    else if(uniteCourante == EGAL){
+      printf("uniteCourante = %d", uniteCourante);
+      uniteCourante = yylex();
+      printf("uniteCourante = %d", uniteCourante);
+      //EXPRESSION();
+    }
+    else{
+      return;
+    }
+    EXPRESSION();
 }
 
 void fois(){
@@ -82,7 +109,7 @@ int main() {
   yyin = fopen("testSyntax.l","r");
   uniteCourante = yylex();
   printf("%s %d\n", "unite courante : ",uniteCourante);
-  EXPRESSION();
+  COMPARAISON();
   if(uniteCourante == FIN)
     printf("%s\n", "Syntaxe correcte");
   else printf("%s\n", "erreur de syntaxe");
