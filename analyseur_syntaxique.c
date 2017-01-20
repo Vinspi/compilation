@@ -178,7 +178,7 @@ int main() {
   /* test */
   test = fopen("test.xml","w");
 
-  yyin = fopen("testSyntax.l","r");
+  yyin = fopen("LFile/testSyntax.l","r");
   uniteCourante = yylex();
   EBOOLEAN();
   if(uniteCourante == FIN)
