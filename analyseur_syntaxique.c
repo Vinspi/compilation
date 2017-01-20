@@ -11,104 +11,160 @@ ATTENTION !
 
 /* grammaire :
   EBOOLEAN -> COMPARAISON ou EBOOLEAN | COMPARAISON & EBOOLEAN | !COMPARAISON | COMPARAISON ***** à implementer *****
-  COMPARAISON -> EXPRESSION < EXPRESSION | EXPRESSION > EXPRESSION | EXPRESSION = EXPRESSION | EXPRESSION >= EXPRESSION | EXPRESSION <= EXPRESSION | EXPRESSION != EXPRESSION | E ***** à implementer *****
+  COMPARAISON ->  EXPRESSION < COMPARAISON | EXPRESSION > COMPARAISON | EXPRESSION = COMPARAISON | EXPRESSION >= COMPARAISON | EXPRESSION <= COMPARAISON | EXPRESSION != COMPARAISON | EXPRESSION ***** à implementer *****
   EXPRESSION -> T ADDITION
   ADDITION -> +EXPRESSION | -EXPRESSION | epsilon
   T -> FOIS TP
   TP -> xFOIS | /FOIS | epsilon
-  FOIS -> (EXPRESSION) | nombre | ID_VAR
+  FOIS -> (COMPARAISON) | nombre | ID_VAR
 */
-
+FILE *test;
 int uniteCourante;
 
 void EXPRESSION(){
+  fprintf(test, "%s\n", "<EXPRESSION>");
   T();
   addition();
+  fprintf(test, "%s\n", "</EXPRESSION>");
 }
 
 void T(){
+  fprintf(test, "%s\n", "<T>");
   fois();
   TP();
+  fprintf(test, "%s\n", "</T>");
 }
 
 void COMPARAISON(){
-    EXPRESSION();
-    if(uniteCourante == INFERIEUR || uniteCourante == SUPERIEUR){
-      uniteCourante = yylex();
-      if(uniteCourante == EGAL)
-        uniteCourante = yylex();
-        //EXPRESSION();
-    }
-    else if(uniteCourante == NON){
-      uniteCourante = yylex();
-      if(uniteCourante == EGAL){
-        uniteCourante = yylex();
+  fprintf(test, "%s\n", "<COMPARAISON>");
+
+
+      if(uniteCourante == NON){
+          uniteCourante = yylex();
+          if(uniteCourante == FIN){
+            printf("%s\n", "erreur de syntaxe");
+            exit(1);
+          }
+          COMPARAISON();
+          fprintf(test, "%s\n", "</COMPARAISON>");
+          return;
       }
-      //EXPRESSION();
-    }
-    else if(uniteCourante == EGAL){
-      printf("uniteCourante = %d", uniteCourante);
-      uniteCourante = yylex();
-      printf("uniteCourante = %d", uniteCourante);
-      //EXPRESSION();
-    }
-    else{
-      return;
-    }
-    EXPRESSION();
+      EXPRESSION();
+      if(uniteCourante == INFERIEUR || uniteCourante == SUPERIEUR){
+        uniteCourante = yylex();
+        if(uniteCourante == EGAL)
+          uniteCourante = yylex();
+        if(uniteCourante == FIN){
+          printf("%s\n", "erreur de syntaxe");
+          exit(1);
+        }
+        COMPARAISON();
+      }
+      else if(uniteCourante == NON){
+        uniteCourante = yylex();
+        if(uniteCourante == EGAL){
+          uniteCourante = yylex();
+          if(uniteCourante == FIN){
+            printf("%s\n", "erreur de syntaxe");
+            exit(1);
+          }
+          COMPARAISON();
+        }
+      }
+      else if(uniteCourante == EGAL){
+        uniteCourante = yylex();
+        if(uniteCourante == FIN){
+          printf("%s\n", "erreur de syntaxe");
+          exit(1);
+        }
+        COMPARAISON();
+      }
+      fprintf(test, "%s\n", "</COMPARAISON>");
 }
 
 void fois(){
+  fprintf(test, "%s\n", "<FOIS>");
+
   if(uniteCourante == PARENTHESE_OUVRANTE){
     uniteCourante = yylex();
-    EXPRESSION();
+    COMPARAISON();
     if(uniteCourante == PARENTHESE_FERMANTE){
+      fprintf(test, "%d\n", "uniteCourante");
+
       uniteCourante = yylex();
+
+      fprintf(test, "%s\n", "</FOIS>");
+
       return;
     }
     else{
       printf("%s\n", "Erreur de syntaxe");
+      fprintf(test, "%s\n", "</FOIS>");
       exit(1);
     }
   }
   if(uniteCourante == FIN){
+    fprintf(test, "%d\n", uniteCourante);
+    fprintf(test, "%s\n", "</FOIS>");
+
     return;
   }
   if(uniteCourante == NOMBRE || uniteCourante == ID_VAR){
+    fprintf(test, "%d\n", uniteCourante);
+
     uniteCourante = yylex();
+
+    fprintf(test, "%s\n", "</FOIS>");
+
     return;
   }
 
   printf("%s\n", "Erreur de syntaxe");
+  fprintf(test, "%s\n", "</FOIS>");
+
   exit(1);
 
 }
 
 void TP() {
+  fprintf(test, "%s\n", "<TP>");
+
   if(uniteCourante == FOIS || uniteCourante == DIVISE){
     uniteCourante = yylex();
+    if (uniteCourante == FIN) {
+      printf("%s\n", "erreur de syntaxe");
+      exit(1);
+    }
     EXPRESSION();
   }
-  if(uniteCourante == FIN){
-    return;
-  }
+  fprintf(test, "%s\n", "</TP>");
+
+
 }
 
 void addition(){
+  fprintf(test, "%s\n", "<ADDITION>");
+
   if(uniteCourante == PLUS || uniteCourante == MOINS){
+    fprintf(test, "%d\n", uniteCourante);
+
     uniteCourante = yylex();
+    if (uniteCourante == FIN) {
+      printf("%s\n", "erreur de syntaxe");
+      exit(1);
+    }
     EXPRESSION();
   }
-  if(uniteCourante == FIN){
-    return;
-  }
+  fprintf(test, "%s\n", "</ADDITION>");
+
 }
 
 int main() {
   /* test */
+  test = fopen("test.xml","w");
+
   yyin = fopen("testSyntax.l","r");
   uniteCourante = yylex();
-  printf("%s %d\n", "unite courante : ",uniteCourante);
   COMPARAISON();
   if(uniteCourante == FIN)
     printf("%s\n", "Syntaxe correcte");
