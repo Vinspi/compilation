@@ -10,7 +10,7 @@ ATTENTION !
 **********************/
 
 /* grammaire :
-  EBOOLEAN -> COMPARAISON ou EBOOLEAN | COMPARAISON & EBOOLEAN | !COMPARAISON | COMPARAISON ***** à implementer *****
+  EBOOLEAN -> COMPARAISON ou EBOOLEAN | COMPARAISON & EBOOLEAN | !EBOOLEAN | COMPARAISON ***** à implementer *****
   COMPARAISON ->  EXPRESSION < COMPARAISON | EXPRESSION > COMPARAISON | EXPRESSION = COMPARAISON | EXPRESSION >= COMPARAISON | EXPRESSION <= COMPARAISON | EXPRESSION != COMPARAISON | EXPRESSION ***** à implementer *****
   EXPRESSION -> T ADDITION
   ADDITION -> +EXPRESSION | -EXPRESSION | epsilon
@@ -35,20 +35,33 @@ void T(){
   fprintf(test, "%s\n", "</T>");
 }
 
+void EBOOLEAN( ) {
+  fprintf(test, "%s\n", "<EBOOLEAN>");
+
+  if(uniteCourante == NON){
+      uniteCourante = yylex();
+      if(uniteCourante == FIN){
+        printf("%s\n", "erreur de syntaxe");
+        exit(1);
+      }
+      EBOOLEAN();
+      fprintf(test, "%s\n", "</EBOOLEAN>");
+      return;
+  }
+  COMPARAISON();
+  if(uniteCourante == OU || uniteCourante == ET){
+    uniteCourante = yylex();
+    if(uniteCourante == FIN){
+      printf("%s\n", "erreur de syntaxe");
+      exit(1);
+    }
+    EBOOLEAN();
+  }
+}
+
 void COMPARAISON(){
   fprintf(test, "%s\n", "<COMPARAISON>");
 
-
-      if(uniteCourante == NON){
-          uniteCourante = yylex();
-          if(uniteCourante == FIN){
-            printf("%s\n", "erreur de syntaxe");
-            exit(1);
-          }
-          COMPARAISON();
-          fprintf(test, "%s\n", "</COMPARAISON>");
-          return;
-      }
       EXPRESSION();
       if(uniteCourante == INFERIEUR || uniteCourante == SUPERIEUR){
         uniteCourante = yylex();
@@ -70,6 +83,8 @@ void COMPARAISON(){
           }
           COMPARAISON();
         }
+        printf("%s\n", "erreur de syntaxe");
+        exit(1);
       }
       else if(uniteCourante == EGAL){
         uniteCourante = yylex();
@@ -87,7 +102,7 @@ void fois(){
 
   if(uniteCourante == PARENTHESE_OUVRANTE){
     uniteCourante = yylex();
-    COMPARAISON();
+    EBOOLEAN();
     if(uniteCourante == PARENTHESE_FERMANTE){
       fprintf(test, "%d\n", "uniteCourante");
 
@@ -165,7 +180,7 @@ int main() {
 
   yyin = fopen("testSyntax.l","r");
   uniteCourante = yylex();
-  COMPARAISON();
+  EBOOLEAN();
   if(uniteCourante == FIN)
     printf("%s\n", "Syntaxe correcte");
   else printf("%s\n", "erreur de syntaxe");

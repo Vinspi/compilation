@@ -50,7 +50,7 @@
 
 /* symboles terminaux */
 #define NB_TERMINAUX 32
-
+#define INCONNU 0
 #define POINT_VIRGULE 1
 #define PLUS 2
 #define MOINS 3
