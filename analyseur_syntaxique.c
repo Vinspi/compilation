@@ -10,6 +10,7 @@ ATTENTION !
 **********************/
 
 /* grammaire :
+
   EBOOLEAN -> COMPARAISON ou EBOOLEAN | COMPARAISON & EBOOLEAN | !EBOOLEAN | COMPARAISON ***** à implementer *****
   COMPARAISON ->  EXPRESSION < COMPARAISON | EXPRESSION > COMPARAISON | EXPRESSION = COMPARAISON | EXPRESSION >= COMPARAISON | EXPRESSION <= COMPARAISON | EXPRESSION != COMPARAISON | EXPRESSION ***** à implementer *****
   EXPRESSION -> T ADDITION
@@ -34,7 +35,7 @@ void T(){
   TP();
   fprintf(test, "%s\n", "</T>");
 }
-
+/*
 void EBOOLEAN( ) {
   fprintf(test, "%s\n", "<EBOOLEAN>");
 
@@ -58,7 +59,10 @@ void EBOOLEAN( ) {
     EBOOLEAN();
   }
 }
+*/
 
+
+/*
 void COMPARAISON(){
   fprintf(test, "%s\n", "<COMPARAISON>");
 
@@ -96,15 +100,15 @@ void COMPARAISON(){
       }
       fprintf(test, "%s\n", "</COMPARAISON>");
 }
-
+*/
 void fois(){
   fprintf(test, "%s\n", "<FOIS>");
 
   if(uniteCourante == PARENTHESE_OUVRANTE){
     uniteCourante = yylex();
-    EBOOLEAN();
+    OR();
     if(uniteCourante == PARENTHESE_FERMANTE){
-      fprintf(test, "%d\n", "uniteCourante");
+      fprintf(test, "%d\n", uniteCourante);
 
       uniteCourante = yylex();
 
@@ -174,13 +178,54 @@ void addition(){
 
 }
 
+ void COMPARAISONPRIME() {
+   if(uniteCourante == EGAL || uniteCourante == INFERIEUR || uniteCourante == SUPERIEUR){
+     uniteCourante = yylex();
+     EXPRESSION();
+   }
+ }
+
+ void ANDPRIME(){
+   if(uniteCourante == ET){
+     uniteCourante = yylex();
+     COMPARAISON();
+   }
+ }
+
+
+ void AND(){
+   COMPARAISON();
+   ANDPRIME();
+ }
+
+void COMPARAISON(){
+  EXPRESSION();
+  COMPARAISONPRIME();
+}
+
+
+
+void ORPRIME(){
+  if(uniteCourante == OU){
+    uniteCourante = yylex();
+    AND();
+  }
+
+}
+
+void OR(){
+  AND();
+  ORPRIME();
+}
+
+
 int main() {
   /* test */
   test = fopen("test.xml","w");
 
   yyin = fopen("LFile/testSyntax.l","r");
   uniteCourante = yylex();
-  EBOOLEAN();
+  OR();
   if(uniteCourante == FIN)
     printf("%s\n", "Syntaxe correcte");
   else printf("%s\n", "erreur de syntaxe");
