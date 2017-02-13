@@ -194,40 +194,40 @@ int yylex(void)
 
 }
 
-void affiche_token(int token) {
+char* affiche_tokenBis(int token) {
   switch (token) {
-    case INCONNU: printf("%s ", "INCONNU"); break;
-    case POINT_VIRGULE: printf("%s ", "POINT_VIRGULE"); break;
-    case PLUS: printf("%s", "PLUS"); break;
-    case MOINS: printf("%s ", "MOINS"); break;
-    case FOIS: printf("%s ", "FOIS"); break;
-    case DIVISE: printf("%s ", "DIVISE"); break;
-    case PARENTHESE_OUVRANTE: printf("%s ", "PARENTHESE_OUVRANTE"); break;
-    case PARENTHESE_FERMANTE: printf("%s ", "PARENTHESE_FERMANTE"); break;
-    case CROCHET_OUVRANT: printf("%s ", "CROCHET_OUVRANT"); break;
-    case CROCHET_FERMANT: printf("%s ", "CROCHET_FERMANT"); break;
-    case ACCOLADE_OUVRANTE: printf("%s ", "ACCOLADE_OUVRANTE"); break;
-    case ACCOLADE_FERMANTE: printf("%s ", "ACCOLADE_FERMANTE"); break;
-    case EGAL: printf("%s ", "EGAL"); break;
-    case INFERIEUR: printf("%s ", "INFERIEUR"); break;
-    case ET: printf("%s ", "ET"); break;
-    case OU: printf("%s ", "OU"); break;
-    case NON: printf("%s ", "NON"); break;
-    case SUPERIEUR: printf("%s ", "SUPERIEUR"); break;
-    case SI: printf("%s ", "SI"); break;
-    case ALORS: printf("%s ", "ALORS"); break;
-    case SINON: printf("%s ", "SINON"); break;
-    case TANTQUE: printf("%s ", "TANTQUE"); break;
-    case FAIRE: printf("%s ", "FAIRE"); break;
-    case ENTIER: printf("%s ", "ENTIER"); break;
-    case RETOUR: printf("%s ", "RETOUR"); break;
-    case LIRE: printf("%s ", "LIRE"); break;
-    case ECRIRE: printf("%s ", "ECRIRE"); break;
-    case ID_VAR: printf("%s ", "ID_VAR"); break;
-    case ID_FCT: printf("%s ", "ID_FCT"); break;
-    case NOMBRE: printf("%s ", "NOMBRE"); break;
-    case FIN: printf("%s ", "FIN"); break;
-    case VIRGULE: printf("%s ", "VIRGULE"); break;
+    case INCONNU: return "INCONNU"; break;
+    case POINT_VIRGULE: return "POINT_VIRGULE"; break;
+    case PLUS: return "PLUS"; break;
+    case MOINS: return "MOINS"; break;
+    case FOIS: return "FOIS"; break;
+    case DIVISE: return "DIVISE"; break;
+    case PARENTHESE_OUVRANTE: return "PARENTHESE_OUVRANTE"; break;
+    case PARENTHESE_FERMANTE: return "PARENTHESE_FERMANTE"; break;
+    case CROCHET_OUVRANT: return "CROCHET_OUVRANT"; break;
+    case CROCHET_FERMANT: return "CROCHET_FERMANT"; break;
+    case ACCOLADE_OUVRANTE: return "ACCOLADE_OUVRANTE"; break;
+    case ACCOLADE_FERMANTE: return "ACCOLADE_FERMANTE"; break;
+    case EGAL: return "EGAL"; break;
+    case INFERIEUR: return "INFERIEUR"; break;
+    case ET: return "ET"; break;
+    case OU: return "OU"; break;
+    case NON: return "NON"; break;
+    case SUPERIEUR: return "SUPERIEUR"; break;
+    case SI: return "SI"; break;
+    case ALORS: return "ALORS"; break;
+    case SINON: return "SINON"; break;
+    case TANTQUE: return "TANTQUE"; break;
+    case FAIRE: return "FAIRE"; break;
+    case ENTIER: return "ENTIER"; break;
+    case RETOUR: return "RETOUR"; break;
+    case LIRE: return "LIRE"; break;
+    case ECRIRE: return "ECRIRE"; break;
+    case ID_VAR: return "ID_VAR"; break;
+    case ID_FCT: return "ID_FCT"; break;
+    case NOMBRE: return "NOMBRE"; break;
+    case FIN: return "FIN"; break;
+    case VIRGULE: return "VIRGULE"; break;
 
 
   }
@@ -238,14 +238,15 @@ void test_yylex() {
 
   do {
     uniteCourante = yylex();
-    affiche_token(uniteCourante);
+    printf(affiche_tokenBis(uniteCourante));
+    printf("\n");
   } while (uniteCourante != FIN);
 }
 
 /*
 int main(int argc, char const *argv[]) {
 
-  yyin = fopen("test.l","r");
+  yyin = fopen("LFile/boucle.l","r");
   test_yylex();
   printf("\n");
 

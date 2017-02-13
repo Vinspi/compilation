@@ -7,7 +7,7 @@
 
 int yylex(void);
 void test_yylex_internal( FILE *yyin );
-void affiche_token(int token);
+char* affiche_tokenBis(int token);
 
 char yytext[YYTEXT_MAX];
 int yyleng;

@@ -101,6 +101,28 @@ void COMPARAISON(){
       fprintf(test, "%s\n", "</COMPARAISON>");
 }
 */
+
+void Z() {
+  fprintf(test, "%s\n", "<Z>");
+
+  if(uniteCourante == CROCHET_OUVRANT){
+    uniteCourante = yylex();
+    OR();
+    if(uniteCourante == CROCHET_FERMANT){
+      uniteCourante = yylex();
+      return;
+    }
+    else {
+      printf("%s\n", "Error do la syntax");
+      fprintf(test, "%s\n", "</Z>");
+
+      exit(1);
+    }
+  }
+  fprintf(test, "%s\n", "</Z>");
+  return;
+}
+
 void fois(){
   fprintf(test, "%s\n", "<FOIS>");
 
@@ -128,7 +150,13 @@ void fois(){
 
     return;
   }
-  if(uniteCourante == NOMBRE || uniteCourante == ID_VAR){
+  if(uniteCourante == ID_VAR){
+    uniteCourante = yylex();
+    Z();
+    fprintf(test, "%s\n", "</FOIS>");
+    return;
+  }
+  if(uniteCourante == NOMBRE){
     fprintf(test, "%d\n", uniteCourante);
 
     uniteCourante = yylex();
@@ -137,6 +165,12 @@ void fois(){
 
     return;
   }
+  if(uniteCourante == NON){
+    uniteCourante = yylex();
+    OR();
+    return;
+  }
+
 
   printf("%s\n", "Erreur de syntaxe");
   fprintf(test, "%s\n", "</FOIS>");

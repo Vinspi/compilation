@@ -1,10 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "util.h"
+#include "analyseur_lexical.h"
 
 /*-------------------------------------------------------------------------*/
 
-extern int nb_ligne;
+int nb_ligne;
 int indent_xml = 0;
 int indent_step = 1; // set to 0 for no indentation
 
@@ -13,6 +15,7 @@ int indent_step = 1; // set to 0 for no indentation
 void erreur(char *message) {
   fprintf (stderr, "Ligne %d : ", nb_ligne);
   fprintf (stderr, "%s\n", message);
+  printf("erreur : %s\n", message);
   exit(1);
 }
 
@@ -30,7 +33,7 @@ void indent() {
     int i;
     for( i = 0; i < indent_xml; i++ ) {
       printf( "  " );
-    }    
+    }
 }
 /*-------------------------------------------------------------------------*/
 void affiche_balise_ouvrante(const char *fct_, int trace_xml) {
@@ -38,7 +41,7 @@ void affiche_balise_ouvrante(const char *fct_, int trace_xml) {
     indent();
     indent_xml += indent_step ;
 	  fprintf (stdout, "<%s>\n", fct_);
-	}  
+	}
 }
 
 /*-------------------------------------------------------------------------*/
@@ -83,11 +86,11 @@ void affiche_xml_texte( char *texte_ ) {
 
 /*-------------------------------------------------------------------------*/
 
-void affiche_element(char *fct_, char *texte_, int trace_xml) {
+void affiche_token(int fct, char *texte_, int trace_xml) {
   if(trace_xml) {
     indent();
-    fprintf (stdout, "<%s>", fct_ );
+    fprintf (stdout, "<%s>", affiche_tokenBis(fct));
     affiche_xml_texte( texte_ );
-    fprintf (stdout, "</%s>\n", fct_ );
+    fprintf (stdout, "</%s>\n", affiche_tokenBis(fct));
   }
 }
