@@ -6,6 +6,7 @@
 #include <stdlib.h>
 
 int yylex(void);
+
 void test_yylex_internal( FILE *yyin );
 char* affiche_tokenBis(int token);
 

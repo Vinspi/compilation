@@ -31,8 +31,11 @@ void optDecVariables(){
       erreur("point virgoule");
     }
   }
-  affiche_balise_fermante(__FUNCTION__,trace_xml);
-  return;
+  if(est_suivant(_optDecVariables_,CC)){
+    affiche_balise_fermante(__FUNCTION__,trace_xml);
+    return;
+  }
+  erreur("optDecVariables");
 }
 
 void listeDecVariables(){
@@ -58,8 +61,11 @@ void listeDecVariableBis(){
     affiche_balise_fermante(__FUNCTION__,trace_xml);
     return;
   }
-  affiche_balise_fermante(__FUNCTION__,trace_xml);
-  return;
+  if(est_suivant(_listeDecVariablesBis_,CC)){
+    affiche_balise_fermante(__FUNCTION__,trace_xml);
+    return;
+  }
+  erreur("listeDecVariableBis");
 }
 
 void declarationVariable(){
@@ -94,6 +100,8 @@ void optTailleTableau() {
       if(CC == CROCHET_FERMANT){
         affiche_token(CC,yytext,trace_xml);
         CC = yylex();
+        affiche_balise_fermante(__FUNCTION__,trace_xml);
+        return;
       }
       else{
         erreur("NOMBRE");
@@ -103,8 +111,11 @@ void optTailleTableau() {
       erreur("CROCHET_FERMANT");
     }
   }
-  affiche_balise_fermante(__FUNCTION__,trace_xml);
-  return;
+  if(est_suivant(_optTailleTableau_,CC)){
+    affiche_balise_fermante(__FUNCTION__,trace_xml);
+    return;
+  }
+  erreur("optTailleTableau");
 }
 
 void listeDecFonctions(){
@@ -112,9 +123,14 @@ void listeDecFonctions(){
   if(est_premier(_declarationFonction_,CC)){
     declarationFonction();
     listeDecFonctions();
+    affiche_balise_fermante(__FUNCTION__,trace_xml);
+    return;
   }
-  affiche_balise_fermante(__FUNCTION__,trace_xml);
-  return;
+  if(est_suivant(_listeDecFonctions_,CC)){
+    affiche_balise_fermante(__FUNCTION__,trace_xml);
+    return;
+  }
+  erreur("listeDecFonctions");
 }
 
 void declarationFonction(){
@@ -157,9 +173,14 @@ void optListeDecVariables(){
   affiche_balise_ouvrante(__FUNCTION__,trace_xml);
   if(est_premier(_listeDecVariables_,CC)){
     listeDecVariables();
+    affiche_balise_fermante(__FUNCTION__,trace_xml);
+    return;
   }
-  affiche_balise_fermante(__FUNCTION__,trace_xml);
-  return;
+  if(est_suivant(_optListeDecVariables_,CC)){
+    affiche_balise_fermante(__FUNCTION__,trace_xml);
+    return;
+  }
+  erreur("optListeDecVariables");
 }
 
 void instruction() {
@@ -270,9 +291,14 @@ void listeInstructions(){
   if(est_premier(_instruction_,CC)){
     instruction();
     listeInstructions();
+    affiche_balise_fermante(__FUNCTION__,trace_xml);
+    return;
   }
-
-  affiche_balise_fermante(__FUNCTION__,trace_xml);
+  if(est_suivant(_listeInstructions_,CC)){
+    affiche_balise_fermante(__FUNCTION__,trace_xml);
+    return;
+  }
+  erreur("listeInstructions");
 }
 
 void instructionSi(){
@@ -307,8 +333,11 @@ void optSinon(){
     CC = yylex();
     instructionBloc();
   }
-
-  affiche_balise_fermante(__FUNCTION__,trace_xml);
+  if(est_suivant(_optSinon_,CC)){
+    affiche_balise_fermante(__FUNCTION__,trace_xml);
+    return;
+  }
+  erreur("optSinon");
 }
 
 void instructionTantQue(){
@@ -442,9 +471,14 @@ void expressionBis(){
     CC = yylex();
     conjonction();
     expressionBis();
+    affiche_balise_fermante(__FUNCTION__,trace_xml);
+    return;
   }
-
-  affiche_balise_fermante(__FUNCTION__,trace_xml);
+  if(est_suivant(_expressionBis_,CC)){
+    affiche_balise_fermante(__FUNCTION__,trace_xml);
+    return;
+  }
+  erreur("expressionBis");
 }
 
 void conjonction(){
@@ -469,9 +503,14 @@ void conjonctionBis(){
     CC = yylex();
     comparaison();
     conjonctionBis();
+    affiche_balise_fermante(__FUNCTION__,trace_xml);
+    return;
   }
-
-  affiche_balise_fermante(__FUNCTION__,trace_xml);
+  if(est_suivant(_conjonctionBis_,CC)){
+    affiche_balise_fermante(__FUNCTION__,trace_xml);
+    return;
+  }
+  erreur("conjonctionBis");
 }
 
 void comparaison(){
@@ -480,6 +519,9 @@ void comparaison(){
   if(est_premier(_expArith_,CC)){
     expArith();
     comparaisonBis();
+  }
+  else{
+    erreur("comparaison");
   }
 
   affiche_balise_fermante(__FUNCTION__,trace_xml);
@@ -496,9 +538,11 @@ void comparaisonBis(){
     affiche_balise_fermante(__FUNCTION__,trace_xml);
     return;
   }
-
-
-  affiche_balise_fermante(__FUNCTION__,trace_xml);
+  if(est_suivant(_comparaisonBis_,CC)){
+    affiche_balise_fermante(__FUNCTION__,trace_xml);
+    return;
+  }
+  erreur("comparaisonBis");
 }
 
 void expArith(){
@@ -524,8 +568,11 @@ void expArithBis(){
     terme();
     expArithBis();
   }
-
-  affiche_balise_fermante(__FUNCTION__,trace_xml);
+  if(est_suivant(_expArithBis_,CC)){
+    affiche_balise_fermante(__FUNCTION__,trace_xml);
+    return;
+  }
+  erreur("expArithBis");
 }
 
 void terme(){
@@ -551,8 +598,11 @@ void termeBis(){
     negation();
     termeBis();
   }
-
-  affiche_balise_fermante(__FUNCTION__,trace_xml);
+  if(est_suivant(_termeBis_,CC)){
+    affiche_balise_fermante(__FUNCTION__,trace_xml);
+    return;
+  }
+  erreur("termeBis");
 }
 
 void negation(){
@@ -662,10 +712,12 @@ void optIndice(){
       erreur("CROCHET_FERMANT optIndice");
     }
   }
-
-  affiche_balise_fermante(__FUNCTION__,trace_xml);
+  if(est_suivant(_optIndice_,CC)){
+    affiche_balise_fermante(__FUNCTION__,trace_xml);
+    return;
+  }
+  erreur("optIndice");
 }
-
 void appelFct(){
   affiche_balise_ouvrante(__FUNCTION__,trace_xml);
 
@@ -702,8 +754,11 @@ void listeExpressions(){
     expression();
     listeExpressionsBis();
   }
-
-  affiche_balise_fermante(__FUNCTION__,trace_xml);
+  if(est_suivant(_listeExpressions_,CC)){
+    affiche_balise_fermante(__FUNCTION__,trace_xml);
+    return;
+  }
+  erreur("listeExpressions");
 }
 
 void listeExpressionsBis(){
@@ -715,8 +770,11 @@ void listeExpressionsBis(){
     expression();
     listeExpressionsBis();
   }
-
-  affiche_balise_fermante(__FUNCTION__,trace_xml);
+  if(est_suivant(_listeExpressionsBis_,CC)){
+    affiche_balise_fermante(__FUNCTION__,trace_xml);
+    return;
+  }
+  erreur("listeExpressionsBis");
 }
 
 int main() {
@@ -728,4 +786,5 @@ int main() {
   initialise_suivants();
   programme();
   return 0;
+
 }

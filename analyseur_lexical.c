@@ -1,29 +1,9 @@
-#include "unitesLexicales.h"
+#include "symboles.h"
 #include "analyseur_lexical.h"
 #include <stdio.h>
 #include <string.h>
+#include "util.h"
 
-
-int mangeEspaces()
-{
-  char c = fgetc(yyin);
-  int comment = 0;
-  while( comment || (c == ' ') || (c == '\n') || (c == '\t') || (c == '#' ) ) {
-    if( c == '#' ) {
-        comment = 1;
-    }
-    if( c == '\n' ) {
-
-      comment = 0;
-    }
-    c = fgetc(yyin);
-  }
-  if ( feof(yyin) ) {
-    return -1;
-  }
-  ungetc(c, yyin);
-  return 0;
-}
 
 
 char lireCar(void)

@@ -47,7 +47,7 @@
 #define _optListeDecVariables_ 41
 
 
-
+#define INCONNU 0
 /* symboles terminaux */
 #define NB_TERMINAUX 32
 

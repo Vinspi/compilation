@@ -4,6 +4,33 @@
 #include "util.h"
 #include "analyseur_lexical.h"
 
+int col = 0;
+int ligne = 0;
+
+/* ------------------------------------------------------------------------*/
+
+int mangeEspaces()
+{
+  char c = fgetc(yyin);
+  int comment = 0;
+  while( comment || (c == ' ') || (c == '\n') || (c == '\t') || (c == '#' ) ) {
+    if( c == '#' ) {
+        comment = 1;
+    }
+    if( c == '\n' ) {
+      ligne++;
+      comment = 0;
+    }
+    c = fgetc(yyin);
+  }
+  if ( feof(yyin) ) {
+    return -1;
+  }
+  ungetc(c, yyin);
+  return 0;
+}
+
+
 /*-------------------------------------------------------------------------*/
 
 int nb_ligne;
@@ -13,9 +40,8 @@ int indent_step = 1; // set to 0 for no indentation
 /*-------------------------------------------------------------------------*/
 
 void erreur(char *message) {
-  fprintf (stderr, "Ligne %d : ", nb_ligne);
+  fprintf (stderr, "Ligne %d : \n", ligne);
   fprintf (stderr, "%s\n", message);
-  printf("erreur : %s\n", message);
   exit(1);
 }
 

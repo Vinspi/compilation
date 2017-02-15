@@ -4,7 +4,7 @@
 void initialise_suivants(void){
   int i,j;
 
-  // Initialiser toutes les cases du tableau à 0
+  // Initialiser toutes les cases du tableau ï¿½ 0
   for(i=0; i <= NB_NON_TERMINAUX; i++)
     for(j=0; j <= NB_TERMINAUX; j++)
       suivants[i][j] = 0;
@@ -320,7 +320,7 @@ void initialise_suivants(void){
   suivants[_listeExpressionsBis_][PARENTHESE_FERMANTE] = 1;
 }
 
-int est_suivant(int terminal, int non_terminal)
+int est_suivant(int non_terminal, int terminal)
 {
   return suivants[non_terminal][terminal];
 }
