@@ -11,7 +11,7 @@
 
 
 int CC;
-int trace_xml = 1;
+int trace_xml = 0;
 FILE *test;
 
 n_prog* programme(){
@@ -111,7 +111,6 @@ n_dec* declarationVariable(){
 }
 
 n_dec* optTailleTableau(char* nom_var) {
-  printf("---------------------------%s---------------------------\n", nom_var);
   affiche_balise_ouvrante(__FUNCTION__,trace_xml);
   if(CC == CROCHET_OUVRANT){
     affiche_token(CC,yytext,trace_xml);
@@ -165,7 +164,6 @@ n_dec* declarationFonction(){
   affiche_balise_ouvrante(__FUNCTION__,trace_xml);
   if(CC == ID_FCT){
     strcpy(nom,yytext);
-    printf("----%s----\n", nom);
     CC = yylex();
     n_l_dec* listeparam = listeParam();
     n_l_dec* listeVar = optDecVariables();
@@ -887,7 +885,6 @@ n_appel* appelFct(){
     strcpy(id_fct,yytext);
     CC = yylex();
 
-    printf("-------------------%s--------------------------\n", id_fct);
     if(CC == PARENTHESE_OUVRANTE){
       affiche_token(CC,yytext,trace_xml);
       CC = yylex();
@@ -952,13 +949,14 @@ n_l_exp* listeExpressionsBis(){
 
 int main() {
 
+  char *path_l = "LFile/boucle.l";
+
   test = fopen("test.xml","w");
-  yyin = fopen("LFile/boucle.l","r");
+  yyin = fopen(path_l,"r");
   CC = yylex();
   initialise_premiers();
   initialise_suivants();
   n_prog* prog = programme();
-  printf("%s\n", "---------------------------------------------------------------------------------------------------------------");
   affiche_n_prog(prog);
   return 0;
 
