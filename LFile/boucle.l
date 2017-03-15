@@ -2,7 +2,7 @@ entier $i, entier $carre;
 main()
 {
     $i = 0;
-    tantque $i < 10 faire 
+    tantque $i < 10 faire
     {
         $carre = $i * $i;
         ecrire( $carre );

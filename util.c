@@ -120,3 +120,12 @@ void affiche_token(int fct, char *texte_, int trace_xml) {
     fprintf (stdout, "</%s>\n", affiche_tokenBis(fct));
   }
 }
+
+void affiche_element(char *fct,char* texte,int trace_xml){
+  if(trace_xml){
+    indent();
+    fprintf(stdout, "<%s>",fct);
+    affiche_xml_texte(texte);
+    fprintf(stdout, "</%s>\n",fct);
+  }
+}
