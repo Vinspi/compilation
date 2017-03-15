@@ -9,7 +9,7 @@ tabsymboles_ tabsymboles;
 
 /*-------------------------------------------------------------------------*/
 
-/** 
+/**
   * Fonction qui bascule table globale -> table locale. À appeler lors qu'on
   * parcourt une déclaration de fonction, juste avant la liste d'arguments.
   */
@@ -21,15 +21,15 @@ void entreeFonction(void){
 }
 
 /*-------------------------------------------------------------------------*/
-/** 
+/**
   * Fonction qui bascule table locale -> table globale. À appeler lors qu'on
-  * a fini de parcourir une déclaration de fonction, après le bloc 
+  * a fini de parcourir une déclaration de fonction, après le bloc
   * d'instructions qui constitue le corps de la fonction
   */
 void sortieFonction(void){
   tabsymboles.sommet = tabsymboles.base;
   tabsymboles.base = 0;
-  portee = P_VARIABLE_GLOBALE;  
+  portee = P_VARIABLE_GLOBALE;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -37,17 +37,17 @@ void sortieFonction(void){
 /**
   * Ajoute un nouvel identificateur à la table des symboles courante.
   * @param identif Nom du nouvel identificateur (variable ou fonction)
-  * @param portee Constante parmi P_VARIABLE_GLOBALE, P_ARGUMENT ou 
+  * @param portee Constante parmi P_VARIABLE_GLOBALE, P_ARGUMENT ou
   *               P_VARIABLE_LOCALE
   * @param type Constante parmi T_ENTIER, T_TABLEAU_ENTIER et T_FONCTION
   * @param adresse Nombre d'octets de décalage par rapport à la base de la zone
-  *                mémoire des variables ($fp pour locales/arguments, .data pour 
+  *                mémoire des variables ($fp pour locales/arguments, .data pour
   *                globales)
-  * @param complement Nombre de paramètres d'une fonction OU nombre de cases 
+  * @param complement Nombre de paramètres d'une fonction OU nombre de cases
   *                   d'un tableau. Indéfini (0) quand type=T_ENTIER.
   * @return Numéro de ligne de l'entrée qui vient d'être rajoutée
   */
-int ajouteIdentificateur(char *identif, int portee, int type, 
+int ajouteIdentificateur(char *identif, int portee, int type,
                          int adresse, int complement)
 {
   tabsymboles.tab[tabsymboles.sommet].identif = strdup(identif);
@@ -60,6 +60,7 @@ int ajouteIdentificateur(char *identif, int portee, int type,
   if(tabsymboles.sommet == MAX_IDENTIF){
     erreur("Plus de place dans la table des symboles, augmenter MAX_IDENTIF\n");
   }
+
   return tabsymboles.sommet - 1;
 }
 
@@ -68,13 +69,13 @@ int ajouteIdentificateur(char *identif, int portee, int type,
 /**
   * Recherche si un identificateur est présent dans la table LOCALE ou GLOBALE
   * Cette fonction doit être utilisée pour s'assurer que tout identificateur
-  * utilisé a été déclaré auparavant. Elle doit être utilisée lors de 
+  * utilisé a été déclaré auparavant. Elle doit être utilisée lors de
   * l'UTILISATION d'un identificateur, soit dans un appel à fonction, une
   * partie gauche d'affectation ou une variable dans une expression. Si deux
   * identificateurs ont le même nom dans des portées différentes (un global et
   * un local), la fonction renvoie le plus proche, c-à-d le local.
   * @param identif Le nom de variable ou fonction que l'on cherche
-  * @return Si oui, renvoie le numéro de ligne dans tabsymboles, si non -1  
+  * @return Si oui, renvoie le numéro de ligne dans tabsymboles, si non -1
   */
 int rechercheExecutable(char *identif)
 {
@@ -94,7 +95,7 @@ int rechercheExecutable(char *identif)
   * Cette fonction doit être utilisée pour s'assurer qu'il n'y a pas deux
   * identificateurs avec le même lors d'une DÉCLARATION d'un identificateur.
   * @param identif Le nom de variable ou fonction que l'on cherche
-  * @return Si oui, renvoie le numéro de ligne dans tabsymboles, si non -1  
+  * @return Si oui, renvoie le numéro de ligne dans tabsymboles, si non -1
   */
 int rechercheDeclarative(char *identif) {
   int i;
@@ -109,9 +110,9 @@ int rechercheDeclarative(char *identif) {
 
 /**
   * Fonction auxiliaire qui permet d'afficher le contenu actuel de la table
-  * des symboles. Pour obtenir un résultat identique aux fichiers de 
+  * des symboles. Pour obtenir un résultat identique aux fichiers de
   * référence, appelez cette fonction juste avant sortieFonction(), une fois
-  * que vous avez parcouru toutes les sous-parties d'une déclaration de 
+  * que vous avez parcouru toutes les sous-parties d'une déclaration de
   * fonction. Cet affichage doit être conditionné sur une variable booléenne
   * qui contrôle si on veut ou pas afficher la table des symboles en fonction
   * des options passées au compilateur.
@@ -124,7 +125,7 @@ void afficheTabsymboles(void) {
   for(i=0; i < tabsymboles.sommet; i++){
     printf("%d ", i);
     printf("%s ", tabsymboles.tab[i].identif);
-    
+
     if(tabsymboles.tab[i].portee == P_VARIABLE_GLOBALE)
       printf("GLOBALE ");
     else
@@ -140,7 +141,7 @@ void afficheTabsymboles(void) {
       printf("TABLEAU ");
     else if(tabsymboles.tab[i].type == T_FONCTION)
       printf("FONCTION ");
-    
+
     printf("%d ", tabsymboles.tab[i].adresse);
     printf("%d\n", tabsymboles.tab[i].complement);
   }

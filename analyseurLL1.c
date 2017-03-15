@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "affiche_arbre_abstrait.h"
+#include "creationTabSymb.h"
 
 
 int CC;
@@ -74,8 +75,8 @@ n_l_dec* listeDecVariableBis(){
     dec = declarationVariable();
     liste = listeDecVariableBis();
     affiche_balise_fermante(__FUNCTION__,trace_xml);
-    liste = cree_n_l_dec(dec,NULL);
-    return liste;
+    return cree_n_l_dec(dec,liste);
+
   }
   if(est_suivant(_listeDecVariablesBis_,CC)){
     affiche_balise_fermante(__FUNCTION__,trace_xml);
@@ -116,13 +117,14 @@ n_dec* optTailleTableau(char* nom_var) {
     affiche_token(CC,yytext,trace_xml);
     CC = yylex();
     if(CC == NOMBRE){
+      int nb = atoi(yytext);
       affiche_token(CC,yytext,trace_xml);
       CC = yylex();
       if(CC == CROCHET_FERMANT){
         affiche_token(CC,yytext,trace_xml);
         CC = yylex();
         affiche_balise_fermante(__FUNCTION__,trace_xml);
-        return cree_n_dec_tab(nom_var,atoi(yytext));
+        return cree_n_dec_tab(nom_var,nb);
       }
       else{
         erreur("NOMBRE");
@@ -862,7 +864,9 @@ n_var* optIndice(char* id_var){
       affiche_token(CC,yytext,trace_xml);
       CC = yylex();
       affiche_balise_fermante(__FUNCTION__,trace_xml);
-      return cree_n_var_indicee(id_var,exp);
+      printf("variable indicee %s\n", exp->u.var);
+      printf("variable indicee %s\n", exp->u.entier);
+      return cree_n_var_indicee(id_var,exp); // probleeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeme
     }
     else{
       erreur("CROCHET_FERMANT optIndice");
@@ -949,7 +953,7 @@ n_l_exp* listeExpressionsBis(){
 
 int main() {
 
-  char *path_l = "LFile/boucle.l";
+  char *path_l = "LFile/tri.l";
 
   test = fopen("test.xml","w");
   yyin = fopen(path_l,"r");
@@ -958,6 +962,9 @@ int main() {
   initialise_suivants();
   n_prog* prog = programme();
   affiche_n_prog(prog);
+  printf("%s\n", "---------------------------------------------");
+  cree_n_tab_dec(prog);
+
   return 0;
 
 }

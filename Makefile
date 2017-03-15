@@ -3,7 +3,7 @@ CC = gcc
 LIBS = -lm
 CCFLAGS = -Wall -ggdb -w -g
 
-OBJ = analyseur_lexical.o premiers.o suivants.o util.o syntabs.o affiche_arbre_abstrait.o
+OBJ = analyseur_lexical.o premiers.o suivants.o util.o syntabs.o affiche_arbre_abstrait.o creationTabSymb.o tabsymboles.o
 
 all: analyseurLL1
 
@@ -25,11 +25,18 @@ analyseurLL1: analyseurLL1.c analyseurLL1.h $(OBJ)
 analyseur_lexical.o: analyseur_lexical.c analyseur_lexical.h
 	$(CC) $(CCFLAGS) -o analyseur_lexical.o -c analyseur_lexical.c
 
-syntabs.o: syntabs.c
+syntabs.o: syntabs.c util.o
 	$(CC) $(CCFLAGS) -o syntabs.o -c syntabs.c
 
 affiche_arbre_abstrait.o: affiche_arbre_abstrait.c syntabs.o util.o
 	$(CC) $(CCFLAGS) -o affiche_arbre_abstrait.o -c affiche_arbre_abstrait.c
+
+creationTabSymb.o: creationTabSymb.c syntabs.o util.o
+	$(CC) $(CCFLAGS) -o creationTabSymb.o -c creationTabSymb.c 
+
+tabsymboles.o: tabsymboles.c util.o
+	$(CC) $(CCFLAGS) -o tabsymboles.o -c tabsymboles.c util.o
+
 
 
 .PHONY : clean

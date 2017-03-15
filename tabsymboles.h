@@ -16,6 +16,7 @@
 #define T_TABLEAU_ENTIER 2
 #define T_FONCTION 3
 
+
 // Enregistrement décrivant une entrée de la table des symboles
 typedef struct {
   char *identif;  // Nom de l'identificateur
