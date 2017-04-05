@@ -864,8 +864,7 @@ n_var* optIndice(char* id_var){
       affiche_token(CC,yytext,trace_xml);
       CC = yylex();
       affiche_balise_fermante(__FUNCTION__,trace_xml);
-      printf("variable indicee %s\n", exp->u.var);
-      printf("variable indicee %s\n", exp->u.entier);
+
       return cree_n_var_indicee(id_var,exp); // probleeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeme
     }
     else{
@@ -953,7 +952,7 @@ n_l_exp* listeExpressionsBis(){
 
 int main() {
 
-  char *path_l = "LFile/tri.l";
+  char *path_l = "LFile/boucle.l";
 
   test = fopen("test.xml","w");
   yyin = fopen(path_l,"r");
@@ -961,7 +960,7 @@ int main() {
   initialise_premiers();
   initialise_suivants();
   n_prog* prog = programme();
-  affiche_n_prog(prog);
+  //affiche_n_prog(prog);
   printf("%s\n", "---------------------------------------------");
   cree_n_tab_dec(prog);
 

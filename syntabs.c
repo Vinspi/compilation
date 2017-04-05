@@ -54,14 +54,6 @@ n_exp *cree_n_exp_appel(n_appel *app)
   return n;
 }
 
-/*n_exp *cree_n_exp_incr(n_var *var)
-{
-  n_exp *n = malloc(sizeof(n_exp));
-  n->type = incrExp;
-  n->u.incr = var;
-  return n;
-  }*/
-
 n_exp *cree_n_exp_var(n_var *var)
 {
   n_exp *n = malloc(sizeof(n_exp));
@@ -93,14 +85,6 @@ n_l_exp *cree_n_l_exp(n_exp *tete, n_l_exp *queue)
   n->queue = queue;
   return n;
 }
-
-/*n_instr *cree_n_instr_incr(n_exp *incr)
-{
-  n_instr *n = malloc(sizeof(n_instr));
-  n->type = incrInst;
-  n->u.incr = incr;
-  return n;
-  }*/
 
 n_instr *cree_n_instr_si(n_exp *test, n_instr *alors, n_instr *sinon)
 {
@@ -221,4 +205,3 @@ n_l_dec *cree_n_l_dec(n_dec *tete, n_l_dec *queue)
   n->queue = queue;
   return n;
 }
-

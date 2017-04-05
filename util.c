@@ -82,6 +82,7 @@ void affiche_balise_fermante(const char *fct_, int trace_xml) {
 
 /*-------------------------------------------------------------------------*/
 
+
 void affiche_texte(char *texte_, int trace_xml) {
   if(trace_xml) {
     indent();

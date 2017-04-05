@@ -93,7 +93,7 @@ int rechercheExecutable(char *identif)
 /**
   * Recherche si un identificateur est présent dans la table LOCALE
   * Cette fonction doit être utilisée pour s'assurer qu'il n'y a pas deux
-  * identificateurs avec le même lors d'une DÉCLARATION d'un identificateur.
+  * identificateurs avec le même nom lors d'une DÉCLARATION d'un identificateur.
   * @param identif Le nom de variable ou fonction que l'on cherche
   * @return Si oui, renvoie le numéro de ligne dans tabsymboles, si non -1
   */
