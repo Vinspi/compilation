@@ -326,7 +326,11 @@ void affiche_var_simple(n_var *n)
 /*-------------------------------------------------------------------------*/
 void affiche_var_indicee(n_var *n)
 {
-  affiche_element("var_indicee", n->nom, trace_abs);
-
+  //affiche_element("var_indicee", n->nom, trace_abs);
+  char *fct = "var_indicee";
+  affiche_balise_ouvrante(fct, trace_abs);
+  affiche_element("var_base_tableau", n->nom, trace_abs);
+  affiche_exp(n->u.indicee_.indice );
+  affiche_balise_fermante(fct, trace_abs);
 }
 /*-------------------------------------------------------------------------*/

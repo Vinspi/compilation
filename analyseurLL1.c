@@ -118,6 +118,7 @@ n_dec* optTailleTableau(char* nom_var) {
     CC = yylex();
     if(CC == NOMBRE){
       int nb = atoi(yytext);
+
       affiche_token(CC,yytext,trace_xml);
       CC = yylex();
       if(CC == CROCHET_FERMANT){
@@ -491,7 +492,14 @@ n_instr* instructionEcriture(){
         affiche_token(CC,yytext,trace_xml);
         CC = yylex();
         affiche_balise_fermante(__FUNCTION__,trace_xml);
-        return cree_n_instr_ecrire(expr);
+        if(CC == POINT_VIRGULE)
+        {
+          CC = yylex();
+          return cree_n_instr_ecrire(expr);
+        }
+        else{
+          erreur("POINT_VIRGULE");
+        }
       }
       else{
         erreur("PARENTHESE_FERMANTE");
@@ -559,7 +567,7 @@ n_exp* expressionBis(n_exp *herite){
     conj = conjonction();
     exp = expressionBis(conj);
     affiche_balise_fermante(__FUNCTION__,trace_xml);
-    return cree_n_exp_op(ou,exp,herite);
+    return cree_n_exp_op(ou,herite,exp);
 
   }
   if(est_suivant(_expressionBis_,CC)){
@@ -601,7 +609,7 @@ n_exp* conjonctionBis(n_exp *herite){
     comp = comparaison();
     conjbis = conjonctionBis(comp);
     affiche_balise_fermante(__FUNCTION__,trace_xml);
-    return cree_n_exp_op(et,conjbis,herite);
+    return cree_n_exp_op(et,herite,conjbis);
   }
   if(est_suivant(_conjonctionBis_,CC)){
     affiche_balise_fermante(__FUNCTION__,trace_xml);
@@ -641,7 +649,7 @@ n_exp* comparaisonBis(n_exp* herite){
     exparith = expArith();
     compbis = comparaisonBis(exparith);
     affiche_balise_fermante(__FUNCTION__,trace_xml);
-    return cree_n_exp_op(egal,compbis,herite);
+    return cree_n_exp_op(egal,herite,compbis);
   }
   if(CC == INFERIEUR){
     affiche_token(CC,yytext,trace_xml);
@@ -649,7 +657,7 @@ n_exp* comparaisonBis(n_exp* herite){
     exparith = expArith();
     compbis = comparaisonBis(exparith);
     affiche_balise_fermante(__FUNCTION__,trace_xml);
-    return cree_n_exp_op(inf,compbis,herite);
+    return cree_n_exp_op(inf,herite,compbis);
   }
   if(est_suivant(_comparaisonBis_,CC)){
     affiche_balise_fermante(__FUNCTION__,trace_xml);
@@ -689,7 +697,7 @@ n_exp* expArithBis(n_exp *herite){
     term = terme();
     exparithbis = expArithBis(term);
     affiche_balise_fermante(__FUNCTION__,trace_xml);
-    return cree_n_exp_op(plus,exparithbis,herite);
+    return cree_n_exp_op(plus,herite,exparithbis);
   }
   if(CC == MOINS){
     affiche_token(CC,yytext,trace_xml);
@@ -697,7 +705,7 @@ n_exp* expArithBis(n_exp *herite){
     term = terme();
     exparithbis = expArithBis(term);
     affiche_balise_fermante(__FUNCTION__,trace_xml);
-    return cree_n_exp_op(moins,exparithbis,herite);
+    return cree_n_exp_op(moins,herite,exparithbis);
   }
   if(est_suivant(_expArithBis_,CC)){
     affiche_balise_fermante(__FUNCTION__,trace_xml);
@@ -736,7 +744,7 @@ n_exp* termeBis(n_exp *herite){
     neg = negation();
     termebis = termeBis(neg);
     affiche_balise_fermante(__FUNCTION__,trace_xml);
-    return cree_n_exp_op(fois,termebis,herite);
+    return cree_n_exp_op(fois,herite,termebis);
   }
   if(CC == DIVISE){
     affiche_token(CC,yytext,trace_xml);
@@ -744,7 +752,7 @@ n_exp* termeBis(n_exp *herite){
     neg = negation();
     termebis = termeBis(neg);
     affiche_balise_fermante(__FUNCTION__,trace_xml);
-    return cree_n_exp_op(divise,termebis,herite);
+    return cree_n_exp_op(divise,herite,termebis);
   }
   if(est_suivant(_termeBis_,CC)){
     affiche_balise_fermante(__FUNCTION__,trace_xml);
@@ -794,9 +802,10 @@ n_exp* facteur(){
   }
   if(CC == NOMBRE){
     affiche_token(CC,yytext,trace_xml);
+    int entier = atoi(yytext);
     CC = yylex();
     affiche_balise_fermante(__FUNCTION__,trace_xml);
-    return cree_n_exp_entier(atoi(yytext));
+    return cree_n_exp_entier(entier);
   }
   if(est_suivant(_appelFct_,CC)){
     n_appel* apl = appelFct();
@@ -864,6 +873,7 @@ n_var* optIndice(char* id_var){
       affiche_token(CC,yytext,trace_xml);
       CC = yylex();
       affiche_balise_fermante(__FUNCTION__,trace_xml);
+
 
       return cree_n_var_indicee(id_var,exp); // probleeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeme
     }
@@ -952,7 +962,7 @@ n_l_exp* listeExpressionsBis(){
 
 int main() {
 
-  char *path_l = "LFile/boucle.l";
+  char *path_l = "LFile/tri.l";
 
   test = fopen("test.xml","w");
   yyin = fopen(path_l,"r");
@@ -960,9 +970,9 @@ int main() {
   initialise_premiers();
   initialise_suivants();
   n_prog* prog = programme();
-  //affiche_n_prog(prog);
-  printf("%s\n", "---------------------------------------------");
-  cree_n_tab_dec(prog);
+  affiche_n_prog(prog);
+  //printf("%s\n", "---------------------------------------------");
+  //cree_n_tab_dec(prog);
 
   return 0;
 

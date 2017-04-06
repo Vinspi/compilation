@@ -1,4 +1,4 @@
-entier $tab[10];
+entier $tab[ 10 ];
 
 initialiser()
 {

@@ -141,6 +141,9 @@ void ajoute_dec_fonc(n_dec* n){
 	}
 	sprintf(buffer,"%s:",n->nom);
 	affiche_texte(buffer,trace);
+
+
+
 	compteParametres(n->u.foncDec_.param);
 	ajouteIdentificateur(n->nom,P_VARIABLE_GLOBALE,T_FONCTION,0,nb_param); // ici on connait le nombre d'args de la fonction
 	entreeFonction();
