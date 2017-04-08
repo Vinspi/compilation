@@ -35,6 +35,7 @@ int etiquetteCourante = 0;
 int flag_etiquette = 0;
 int nu_etiquette_si = 0;
 int nu_etiquette_tq = 0;
+int nb_var_locale = 0;
 
 
 tabsymboles_ tabsymboles;
@@ -53,7 +54,7 @@ void cree_n_tab_dec(n_prog *n)
   ajoute_l_dec(n->variables);
 	affiche_texte(".text",trace);
 	affiche_texte("__start:",trace);
-	affiche_texte("\tjal main",trace);
+	affiche_texte("\tjal f_main",trace);
 	affiche_texte("\tli $v0, 10",trace);
 	affiche_texte("\tsyscall\t#exit",trace);
   ajoute_l_dec(n->fonctions);
@@ -127,7 +128,7 @@ void ajoute_dec_var(n_dec* n){
 
 		ajouteIdentificateur(n->nom,portee,T_ENTIER,adresseLocaleCourante,1);
 		adresseLocaleCourante+=4;
-
+		nb_var_locale++;
 		return;
 	}
 	else{
@@ -142,11 +143,12 @@ void ajoute_dec_var(n_dec* n){
 
 void ajoute_dec_fonc(n_dec* n){
 	nb_param = 0;
+	nb_var_locale = 0;
 	if(rechercheDeclarative(n->nom) >= 0){
 		printf("ERROR: redeclaration de la fonction %s\n",n->nom);
 		exit(1);
 	}
-	sprintf(buffer,"%s:",n->nom);
+	sprintf(buffer,"f_%s:",n->nom);
 	affiche_texte(buffer,trace);
 
 	sprintf(buffer,"\tsubi	$sp, $sp, 4\t#empile registre");
@@ -164,12 +166,10 @@ void ajoute_dec_fonc(n_dec* n){
 	sprintf(buffer,"\tsw	$ra, 0($sp)");
 	affiche_texte(buffer, trace);
 
-
-
-
-
-
 	compteParametres(n->u.foncDec_.param);
+
+
+
 	ajouteIdentificateur(n->nom,P_VARIABLE_GLOBALE,T_FONCTION,0,nb_param); // ici on connait le nombre d'args de la fonction
 	entreeFonction();
 	portee = P_ARGUMENT;
@@ -177,11 +177,21 @@ void ajoute_dec_fonc(n_dec* n){
 	portee = P_VARIABLE_LOCALE;
 	//entreeFonction();
 	ajoute_l_dec(n->u.foncDec_.variables);
+
+	if(nb_var_locale > 0){
+		sprintf(buffer,"\tsubi $sp $sp %d\t#on alloue les variables locales",4*nb_var_locale);
+		affiche_texte(buffer,trace);
+	}
 	// on ne fait pas encore le check du corps de la fonction
 
 	analyse_n_instr(n->u.foncDec_.corps);
 
 	//afficheTabsymboles();
+
+	if(nb_var_locale > 0){
+		sprintf(buffer,"\taddi $sp $sp %d\t#on désalloue les variables locales",4*nb_var_locale);
+		affiche_texte(buffer,trace);
+	}
 
 	sprintf(buffer,"\tlw	$ra, 0($sp)\t# depile vers registre");
 	affiche_texte(buffer,trace);
@@ -237,8 +247,18 @@ void analyse_n_instr(n_instr *corps){
 
 			analyse_n_exp(corps->u.affecte_.exp);
 			depile(current_register);
-			sprintf(buffer,"\tsw $t%d, %s \t#sauve la variable",current_register,corps->u.affecte_.var->nom);
-			affiche_texte(buffer,trace);
+			if(tabsymboles.tab[rechercheExecutable(corps->u.affecte_.var->nom)].portee == P_VARIABLE_GLOBALE){
+				sprintf(buffer,"\tsw $t%d, %s \t#sauve la variable",current_register,corps->u.affecte_.var->nom);
+				affiche_texte(buffer,trace);
+			}
+			if(tabsymboles.tab[rechercheExecutable(corps->u.affecte_.var->nom)].portee == P_VARIABLE_LOCALE){
+				sprintf(buffer,"\tsw $t%d, -%d($fp) \t#sauve la variable",current_register,8+tabsymboles.tab[rechercheExecutable(corps->u.affecte_.var->nom)].adresse);
+				affiche_texte(buffer,trace);
+			}
+			if(tabsymboles.tab[rechercheExecutable(corps->u.affecte_.var->nom)].portee == P_ARGUMENT){
+				sprintf(buffer,"\tsw $t%d, %d($fp) \t#sauve la variable",current_register,4+tabsymboles.tab[rechercheExecutable(corps->u.affecte_.var->nom)].adresse);
+				affiche_texte(buffer,trace);
+			}
 			break;
 		case siInst:
 			etiquette_si = nu_etiquette_si;
@@ -345,7 +365,17 @@ int analyse_n_exp(n_exp *exp){
 			if(tabsymboles.tab[rechercheExecutable(exp->u.var->nom)].portee == P_VARIABLE_GLOBALE){
 				sprintf(buffer,"\tlw $t%d %s",nu_registre,exp->u.var->nom);
 				affiche_texte(buffer,trace);
-				empile(nu_registre);
+				empile(1);
+			}
+			if(tabsymboles.tab[rechercheExecutable(exp->u.var->nom)].portee == P_VARIABLE_LOCALE){
+				sprintf(buffer,"\tlw $t%d -%d($fp)",1,8+tabsymboles.tab[rechercheExecutable(exp->u.var->nom)].adresse);
+				affiche_texte(buffer,trace);
+				empile(1);
+			}
+			if(tabsymboles.tab[rechercheExecutable(exp->u.var->nom)].portee == P_ARGUMENT){
+				sprintf(buffer,"\tlw $t%d, %d($fp) \t#sauve la variable",1,4+tabsymboles.tab[rechercheExecutable(exp->u.var->nom)].adresse);
+				affiche_texte(buffer,trace);
+				empile(1);
 			}
 			return nu_registre-1;
 
@@ -463,16 +493,18 @@ int analyse_n_exp(n_exp *exp){
 					analyse_n_exp(exp->u.opExp_.op2);
 					depile(1);
 					depile(2);
-					sprintf(buffer,"\tli $t0, -1");
+					// sprintf(buffer,"\tli $t0, -1");
+					// affiche_texte(buffer,trace);
+					// sprintf(buffer,"\tblt $t%d, $t%d, e%d",2,1,etiquetteCourante);
+					// affiche_texte(buffer,trace);
+					// sprintf(buffer,"\tli $t0, 0");
+					// affiche_texte(buffer,trace);
+					// if(nu_etiquette == etiquetteCourante){
+					// 	sprintf(buffer,"e%d:",etiquetteCourante);
+					// 	affiche_texte(buffer,trace);
+					// }
+					sprintf(buffer,"\tslt $t%d, $t%d, $t%d",0,2,1);
 					affiche_texte(buffer,trace);
-					sprintf(buffer,"\tblt $t%d, $t%d, e%d",2,1,etiquetteCourante);
-					affiche_texte(buffer,trace);
-					sprintf(buffer,"\tli $t0, 0");
-					affiche_texte(buffer,trace);
-					if(nu_etiquette == etiquetteCourante){
-						sprintf(buffer,"e%d:",etiquetteCourante);
-						affiche_texte(buffer,trace);
-					}
 					empile(0);
 					break;
 				case egal:
@@ -480,16 +512,18 @@ int analyse_n_exp(n_exp *exp){
 					analyse_n_exp(exp->u.opExp_.op2);
 					depile(1);
 					depile(2);
-					sprintf(buffer,"\tli $t0, -1");
+					// sprintf(buffer,"\tli $t0, -1");
+					// affiche_texte(buffer,trace);
+					// sprintf(buffer,"\tbeq $t%d, $t%d, e%d",1,2,etiquetteCourante);
+					// affiche_texte(buffer,trace);
+					// sprintf(buffer,"\tli $t0, 0");
+					// affiche_texte(buffer,trace);
+					// if(nu_etiquette == etiquetteCourante){
+					// 	sprintf(buffer,"e%d:",etiquetteCourante);
+					// 	affiche_texte(buffer,trace);
+					// }
+					sprintf(buffer,"\tseq $t%d, $t%d, $t%d",0,2,1);
 					affiche_texte(buffer,trace);
-					sprintf(buffer,"\tbeq $t%d, $t%d, e%d",1,2,etiquetteCourante);
-					affiche_texte(buffer,trace);
-					sprintf(buffer,"\tli $t0, 0");
-					affiche_texte(buffer,trace);
-					if(nu_etiquette == etiquetteCourante){
-						sprintf(buffer,"e%d:",etiquetteCourante);
-						affiche_texte(buffer,trace);
-					}
 					empile(0);
 					break;
 
@@ -542,6 +576,11 @@ void analyser_n_appel(n_appel *appel){
 	}
 
 	analyse_n_l_exp(appel->args);
+
+	sprintf(buffer,"\tjal f_%s",appel->fonction);
+	affiche_texte(buffer,trace);
+	sprintf(buffer,"\taddi $sp $sp %d",4*tabsymboles.tab[rechercheExecutable(appel->fonction)].complement);
+	affiche_texte(buffer,trace);
 }
 
 /*-------------------------------------------------------------------------------------------*/

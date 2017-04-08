@@ -807,7 +807,7 @@ n_exp* facteur(){
     affiche_balise_fermante(__FUNCTION__,trace_xml);
     return cree_n_exp_entier(entier);
   }
-  if(est_suivant(_appelFct_,CC)){
+  if(est_premier(_appelFct_,CC)){
     n_appel* apl = appelFct();
     affiche_balise_fermante(__FUNCTION__,trace_xml);
     return cree_n_exp_appel(apl);
