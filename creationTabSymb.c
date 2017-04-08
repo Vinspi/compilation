@@ -17,6 +17,8 @@ void analyse_n_l_exp(n_l_exp *l_exp);
 void analyser_n_appel(n_appel *appel);
 void analyse_n_l_instr(n_l_instr *l_instr);
 void verification_main();
+void empile(int reg);
+void depile(int reg);
 
 // int ajouteIdentificateur(char *identif,  int portee, int type, int adresse, int complement);
 
@@ -27,7 +29,12 @@ int adresseGlobaleCourante;
 int nb_param;
 int trace = 1;
 int buffer[80];
-int nu_registre = 0;
+int nu_registre = 1;
+int nu_etiquette = 0;
+int etiquetteCourante = 0;
+int flag_etiquette = 0;
+int nu_etiquette_si = 0;
+int nu_etiquette_tq = 0;
 
 
 tabsymboles_ tabsymboles;
@@ -47,7 +54,7 @@ void cree_n_tab_dec(n_prog *n)
 	affiche_texte(".text",trace);
 	affiche_texte("__start:",trace);
 	affiche_texte("\tjal main",trace);
-	affiche_texte("\tli $vo 10",trace);
+	affiche_texte("\tli $v0, 10",trace);
 	affiche_texte("\tsyscall\t#exit",trace);
   ajoute_l_dec(n->fonctions);
 	verification_main();
@@ -142,6 +149,24 @@ void ajoute_dec_fonc(n_dec* n){
 	sprintf(buffer,"%s:",n->nom);
 	affiche_texte(buffer,trace);
 
+	sprintf(buffer,"\tsubi	$sp, $sp, 4\t#empile registre");
+	affiche_texte(buffer,trace);
+
+	sprintf(buffer,"\tsw	$fp, 0($sp)");
+	affiche_texte(buffer, trace);
+
+	sprintf(buffer,"\tmove	$fp, $sp\t#nouvelle valeur de $fp");
+	affiche_texte(buffer, trace);
+
+	sprintf(buffer,"\tsubi	$sp, $sp, 4\t# empile registre");
+	affiche_texte(buffer, trace);
+
+	sprintf(buffer,"\tsw	$ra, 0($sp)");
+	affiche_texte(buffer, trace);
+
+
+
+
 
 
 	compteParametres(n->u.foncDec_.param);
@@ -157,6 +182,22 @@ void ajoute_dec_fonc(n_dec* n){
 	analyse_n_instr(n->u.foncDec_.corps);
 
 	//afficheTabsymboles();
+
+	sprintf(buffer,"\tlw	$ra, 0($sp)\t# depile vers registre");
+	affiche_texte(buffer,trace);
+
+	sprintf(buffer,"\taddi	$sp, $sp, 4");
+	affiche_texte(buffer,trace);
+
+	sprintf(buffer,"\tlw	$fp, 0($sp)\t# depile vers registre");
+	affiche_texte(buffer,trace);
+
+	sprintf(buffer,"\taddi	$sp, $sp, 4");
+	affiche_texte(buffer,trace);
+
+	sprintf(buffer,"\tjr	$ra");
+	affiche_texte(buffer,trace);
+
 	sortieFonction();
 }
 
@@ -172,8 +213,9 @@ void compteParametres(n_l_dec* n){
 /*-------------------------------------------------------------------------------------------*/
 
 void analyse_n_instr(n_instr *corps){
+	int etiquette_si,etiquette_fin_si, reg_1, etiquette_test, etiquette_fin_tq;
 	if(corps == NULL) return;
-	int current_register;
+	int current_register = 1;
 	switch (corps->type) {
 		case incrInst:
 			analyse_n_exp(corps->u.incr);
@@ -191,22 +233,62 @@ void analyse_n_instr(n_instr *corps){
 				printf("ERROR : variable %s mauvais type\n", corps->u.affecte_.var->nom);
 				exit(1);
 			}
-			current_register = analyse_n_exp(corps->u.affecte_.exp);
+			//current_register = analyse_n_exp(corps->u.affecte_.exp);
+
+			analyse_n_exp(corps->u.affecte_.exp);
+			depile(current_register);
 			sprintf(buffer,"\tsw $t%d, %s \t#sauve la variable",current_register,corps->u.affecte_.var->nom);
 			affiche_texte(buffer,trace);
 			break;
 		case siInst:
+			etiquette_si = nu_etiquette_si;
+			nu_etiquette_si++;
+			etiquette_fin_si = nu_etiquette_si;
+			nu_etiquette_si++;
+
+			//reg_1 = analyse_n_exp(corps->u.si_.test);
 			analyse_n_exp(corps->u.si_.test);
+			depile(reg_1);
+			sprintf(buffer,"\tbeq $t%d, $0, si%d",reg_1,etiquette_si);
+			affiche_texte(buffer,trace);
 			analyse_n_instr(corps->u.si_.alors);
+			/* si pas de sinon pas besoin de jump par dessus la section sinon */
+			if(corps->u.si_.sinon != NULL){
+				sprintf(buffer,"\tj si%d",etiquette_fin_si);
+				affiche_texte(buffer,trace);
+			}
+			sprintf(buffer,"si%d:",etiquette_si);
+			affiche_texte(buffer,trace);
 			analyse_n_instr(corps->u.si_.sinon);
+			if(corps->u.si_.sinon != NULL){
+				sprintf(buffer,"si%d:",etiquette_fin_si);
+				affiche_texte(buffer,trace);
+			}
 			break;
 		case faireInst:
 			analyse_n_exp(corps->u.faire_.test);
 			analyse_n_instr(corps->u.faire_.faire);
 			break;
 		case tantqueInst:
+			/* on reserve les etiquettes */
+			etiquette_test = nu_etiquette_tq;
+			nu_etiquette_tq++;
+			etiquette_fin_tq = nu_etiquette_tq;
+			nu_etiquette_tq++;
+			/* on place l'etiquette de test */
+			sprintf(buffer,"tq%d:",etiquette_test);
+			affiche_texte(buffer,trace);
+			//reg_1 = analyse_n_exp(corps->u.tantque_.test);
 			analyse_n_exp(corps->u.tantque_.test);
+			depile(reg_1);
+			/* si c'est faux on branche à la sortie */
+			sprintf(buffer,"\tbeq $t%d $0 tq%d",reg_1,etiquette_fin_tq);
+			affiche_texte(buffer,trace);
 			analyse_n_instr(corps->u.tantque_.faire);
+			sprintf(buffer,"\tj tq%d",etiquette_test);
+			affiche_texte(buffer,trace);
+			sprintf(buffer,"tq%d:",etiquette_fin_tq);
+			affiche_texte(buffer,trace);
 			break;
 		case appelInst:
 			analyser_n_appel(corps->u.appel);
@@ -215,10 +297,12 @@ void analyse_n_instr(n_instr *corps){
 			analyse_n_exp(corps->u.retour_.expression);
 			break;
 		case ecrireInst:
-			current_register = analyse_n_exp(corps->u.retour_.expression);
-			sprintf(buffer,"\tli $vo 1");
+			//current_register = analyse_n_exp(corps->u.retour_.expression);
+			analyse_n_exp(corps->u.retour_.expression);
+			depile(current_register);
+			sprintf(buffer,"\tli $v0, 1");
 			affiche_texte(buffer,trace);
-			sprintf(buffer,"\tmove $ao $t%d",current_register);
+			sprintf(buffer,"\tmove $a0, $t%d",current_register);
 			affiche_texte(buffer,trace);
 			sprintf(buffer,"\tsyscall");
 			affiche_texte(buffer,trace);
@@ -237,7 +321,11 @@ void analyse_n_instr(n_instr *corps){
 /*-------------------------------------------------------------------------------------------*/
 
 int analyse_n_exp(n_exp *exp){
-	int reg_1, reg_2;
+	int reg_1, reg_2, reg_return,tmp, flag=0, etiquette;
+	if(!flag_etiquette){
+		 flag = 1;
+		 flag_etiquette = 1;
+	 }
 	switch (exp->type) {
 		case varExp:
 			if(rechercheExecutable(exp->u.var->nom) < 0){
@@ -254,35 +342,165 @@ int analyse_n_exp(n_exp *exp){
 				printf("ERROR : variable %s mauvais type\n", exp->u.var->nom);
 				exit(1);
 			}
-			if(tabsymboles.tab[rechercheExecutable(exp->u.var->nom)].portee == P_VARIABLE_GLOBALE) printf("\tlw $t%d, %s\n",nu_registre,exp->u.var->nom);
-			nu_registre++;
+			if(tabsymboles.tab[rechercheExecutable(exp->u.var->nom)].portee == P_VARIABLE_GLOBALE){
+				sprintf(buffer,"\tlw $t%d %s",nu_registre,exp->u.var->nom);
+				affiche_texte(buffer,trace);
+				empile(nu_registre);
+			}
 			return nu_registre-1;
 
 		case opExp:
-			reg_1 = analyse_n_exp(exp->u.opExp_.op1);
-			reg_2 = analyse_n_exp(exp->u.opExp_.op2);
+
 			switch (exp->u.opExp_.op) {
-				case plus:
-					sprintf(buffer,"\tadd $t%d, $t%d, $t%d",nu_registre,reg_1,reg_2);
+				case non:
+					analyse_n_exp(exp->u.opExp_.op1);
+					depile(1);
+					sprintf(buffer,"\tseq $t%d, $t%d, $0",1,1);
 					affiche_texte(buffer,trace);
+					empile(1);
+					// reg_return = nu_registre;
+					// nu_registre++;
+					break;
+				case plus:
+					analyse_n_exp(exp->u.opExp_.op1);
+					analyse_n_exp(exp->u.opExp_.op2);
+					depile(1);
+					depile(2);
+					sprintf(buffer,"\tadd $t%d, $t%d, $t%d",1,1,2);
+					affiche_texte(buffer,trace);
+					empile(1);
+					// reg_return = nu_registre;
+					// nu_registre++;
 					break;
 				case moins:
-					sprintf(buffer,"\tsub $t%d, $t%d, $t%d",nu_registre,reg_1,reg_2);
+					analyse_n_exp(exp->u.opExp_.op1);
+					analyse_n_exp(exp->u.opExp_.op2);
+					depile(1);
+					depile(2);
+					sprintf(buffer,"\tsub $t%d, $t%d, $t%d",1,2,1);
 					affiche_texte(buffer,trace);
+					empile(1);
+					// reg_return = nu_registre;
+					// nu_registre++;
 					break;
 				case fois:
-					sprintf(buffer,"\tmul $t%d, $t%d",reg_1,reg_2);
+					analyse_n_exp(exp->u.opExp_.op1);
+					analyse_n_exp(exp->u.opExp_.op2);
+					depile(1);
+					depile(2);
+					sprintf(buffer,"\tmult $t%d, $t%d",1,2);
 					affiche_texte(buffer,trace);
-					sprintf(buffer,"\tmflo $t%d",nu_registre);
+					sprintf(buffer,"\tmflo $t%d",1);
 					affiche_texte(buffer,trace);
+					empile(1);
+					// reg_return = nu_registre;
+					// nu_registre++;
 					break;
+				case divise:
+					analyse_n_exp(exp->u.opExp_.op1);
+					analyse_n_exp(exp->u.opExp_.op2);
+					depile(1);
+					depile(2);
+					sprintf(buffer,"\tdiv $t%d, $t%d",2,1);
+					affiche_texte(buffer,trace);
+					sprintf(buffer,"\tmflo $t%d",1);
+					affiche_texte(buffer,trace);
+					empile(1);
+					// reg_return = nu_registre;
+					// nu_registre++;
+					break;
+				case modulo:
+					analyse_n_exp(exp->u.opExp_.op1);
+					analyse_n_exp(exp->u.opExp_.op2);
+					depile(1);
+					depile(2);
+					sprintf(buffer,"\tdiv $t%d, $t%d",2,1);
+					affiche_texte(buffer,trace);
+					sprintf(buffer,"\tmfhi $t%d",1);
+					affiche_texte(buffer,trace);
+					empile(1);
+					// reg_return = nu_registre;
+					// nu_registre++;
+					break;
+				case et:
+					tmp = nu_etiquette;
+					nu_etiquette++;
+					etiquetteCourante = nu_etiquette;
+					analyse_n_exp(exp->u.opExp_.op1);
+					depile(1);
+
+					sprintf(buffer,"\tbeq $t%d, $0 e%d",1,tmp);
+
+					affiche_texte(buffer,trace);
+					etiquetteCourante = tmp;
+					nu_etiquette++;
+					analyse_n_exp(exp->u.opExp_.op2);
+					depile(2);
+					sprintf(buffer,"e%d:",tmp);
+					affiche_texte(buffer,trace);
+
+					empile(0);
+					break;
+				case ou:
+					tmp = nu_etiquette;
+					nu_etiquette++;
+					etiquetteCourante = nu_etiquette;
+					analyse_n_exp(exp->u.opExp_.op1);
+					depile(1);
+					sprintf(buffer,"\tbne $t%d, $0 e%d",1,tmp);
+
+					affiche_texte(buffer,trace);
+					etiquetteCourante = tmp;
+					nu_etiquette++;
+					analyse_n_exp(exp->u.opExp_.op2);
+					depile(2);
+					sprintf(buffer,"e%d:",tmp);
+					affiche_texte(buffer,trace);
+					empile(0);
+					break;
+				case inf:
+					analyse_n_exp(exp->u.opExp_.op1);
+					analyse_n_exp(exp->u.opExp_.op2);
+					depile(1);
+					depile(2);
+					sprintf(buffer,"\tli $t0, -1");
+					affiche_texte(buffer,trace);
+					sprintf(buffer,"\tblt $t%d, $t%d, e%d",2,1,etiquetteCourante);
+					affiche_texte(buffer,trace);
+					sprintf(buffer,"\tli $t0, 0");
+					affiche_texte(buffer,trace);
+					if(nu_etiquette == etiquetteCourante){
+						sprintf(buffer,"e%d:",etiquetteCourante);
+						affiche_texte(buffer,trace);
+					}
+					empile(0);
+					break;
+				case egal:
+					analyse_n_exp(exp->u.opExp_.op1);
+					analyse_n_exp(exp->u.opExp_.op2);
+					depile(1);
+					depile(2);
+					sprintf(buffer,"\tli $t0, -1");
+					affiche_texte(buffer,trace);
+					sprintf(buffer,"\tbeq $t%d, $t%d, e%d",1,2,etiquetteCourante);
+					affiche_texte(buffer,trace);
+					sprintf(buffer,"\tli $t0, 0");
+					affiche_texte(buffer,trace);
+					if(nu_etiquette == etiquetteCourante){
+						sprintf(buffer,"e%d:",etiquetteCourante);
+						affiche_texte(buffer,trace);
+					}
+					empile(0);
+					break;
+
+
 			}
-			nu_registre++;
-			return nu_registre-1;
-		case intExp:
-			sprintf(buffer,"\tli $t%d, %d",nu_registre,exp->u.entier);
+
+			return reg_return;
+		case intExp: // attention !!!!!!!!!!!
+			sprintf(buffer,"\tli $t%d, %d",1,exp->u.entier);
 			affiche_texte(buffer,trace);
-			nu_registre++;
+			empile(1);
 			return nu_registre-1;
 
 		case appelExp:
@@ -290,13 +508,13 @@ int analyse_n_exp(n_exp *exp){
 			break;
 
 		case lireExp:
-			sprintf(buffer,"\tli $vo, 5");
+			sprintf(buffer,"\tli $v0, 5");
 			affiche_texte(buffer,trace);
 			sprintf(buffer,"\tsyscall");
 			affiche_texte(buffer,trace);
-			sprintf(buffer,"\tmove $t%d, $vo",nu_registre);
+			sprintf(buffer,"\tmove $t%d, $v0",1);
 			affiche_texte(buffer,trace);
-			nu_registre++;
+			empile(1);
 			return nu_registre-1;
 
 	}
@@ -360,4 +578,22 @@ void verification_main(){
 		printf("ERROR : impossible de trouver la fonction main\n");
 		exit(1);
 	}
+}
+
+/*-------------------------------------------------------------------------------------------*/
+
+void empile( int reg ) {
+	sprintf(buffer,"\tsubu $sp, $sp, 4\t# alloue un mot sur la pile" );
+	affiche_texte(buffer,trace);
+	sprintf(buffer,"\tsw $t%d, 0($sp)\t# copie reg vers sommet de pile", reg );
+	affiche_texte(buffer,trace);
+}
+
+/*-------------------------------------------------------------------------------------------*/
+
+void depile( int reg ) {
+	sprintf(buffer,"\tlw $t%d, 0($sp)\t# copie sommet de pile vers reg", reg );
+	affiche_texte(buffer,trace);
+	sprintf(buffer,"\taddu $sp, $sp, 4\t# desalloue un mot sur la pile" );
+	affiche_texte(buffer,trace);
 }

@@ -962,7 +962,7 @@ n_l_exp* listeExpressionsBis(){
 
 int main() {
 
-  char *path_l = "LFile/tri.l";
+  char *path_l = "LFile/boucle.l";
 
   test = fopen("test.xml","w");
   yyin = fopen(path_l,"r");
@@ -970,9 +970,9 @@ int main() {
   initialise_premiers();
   initialise_suivants();
   n_prog* prog = programme();
-  affiche_n_prog(prog);
+  //affiche_n_prog(prog);
   //printf("%s\n", "---------------------------------------------");
-  //cree_n_tab_dec(prog);
+  cree_n_tab_dec(prog);
 
   return 0;
 

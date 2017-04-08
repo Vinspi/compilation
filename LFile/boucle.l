@@ -1,6 +1,16 @@
-entier $a, entier $b;
+entier $a, entier $b, entier $tmp;
+
+
 main(){
   $a = lire();
-  $b = $a * $a;
-  ecrire($b);
+  $b = 0;
+  $tmp = 0;
+  tantque ($b < $a)
+  faire{
+    
+    $b = $b + 1;
+    $tmp = $tmp + $b;
+
+  }
+  ecrire($tmp);
 }
