@@ -369,6 +369,12 @@ void analyse_n_instr(n_instr *corps){
 			affiche_texte(buffer,trace);
 			sprintf(buffer,"\tsyscall");
 			affiche_texte(buffer,trace);
+			sprintf(buffer,"\tli $v0, 11");
+      affiche_texte(buffer,trace);
+      sprintf(buffer,"\tli $a0,\'\\n\'");
+      affiche_texte(buffer,trace);
+      sprintf(buffer,"\tsyscall");
+      affiche_texte(buffer,trace);
 
 			break;
 		case videInst:
