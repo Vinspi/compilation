@@ -962,7 +962,7 @@ n_l_exp* listeExpressionsBis(){
 
 int main() {
 
-  char *path_l = "LFile/boucle.l";
+  char *path_l = "LFile/tri.l";
 
   test = fopen("test.xml","w");
   yyin = fopen(path_l,"r");

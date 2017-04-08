@@ -96,7 +96,7 @@ void ajoute_dec_tab(n_dec *n){
 		ajouteIdentificateur(n->nom,portee,T_TABLEAU_ENTIER,adresseGlobaleCourante,n->u.tabDec_.taille);
 		adresseGlobaleCourante+= (n->u.tabDec_.taille*4);
 
-		sprintf(buffer,"\t%s: .space %d", n->nom,n->u.tabDec_.taille*4);
+		sprintf(buffer,"\tv_%s: .space %d", n->nom,n->u.tabDec_.taille*4);
 		affiche_texte(buffer,trace);
 
 
@@ -119,7 +119,7 @@ void ajoute_dec_var(n_dec* n){
 
 		ajouteIdentificateur(n->nom,portee,T_ENTIER,adresseGlobaleCourante,1);
 		adresseGlobaleCourante+=4;
-		sprintf(buffer,"\t%s: .word 0", n->nom);
+		sprintf(buffer,"\tv_%s: .space 4", n->nom);
 		affiche_texte(buffer,trace);
 
 		return;
@@ -134,7 +134,7 @@ void ajoute_dec_var(n_dec* n){
 	else{
 		ajouteIdentificateur(n->nom,portee,T_ENTIER,adresseArgumentCourant,1);
 		adresseArgumentCourant+=4;
-		nb_param++;
+
 		return;
 	}
 }
@@ -245,19 +245,39 @@ void analyse_n_instr(n_instr *corps){
 			}
 			//current_register = analyse_n_exp(corps->u.affecte_.exp);
 
+			if(corps->u.affecte_.var->type == indicee){
+				analyse_n_exp(corps->u.affecte_.var->u.indicee_.indice);
+			}
+
 			analyse_n_exp(corps->u.affecte_.exp);
-			depile(current_register);
-			if(tabsymboles.tab[rechercheExecutable(corps->u.affecte_.var->nom)].portee == P_VARIABLE_GLOBALE){
-				sprintf(buffer,"\tsw $t%d, %s \t#sauve la variable",current_register,corps->u.affecte_.var->nom);
+			if(corps->u.affecte_.var->type == indicee){
+				depile(1);
+				depile(0);
+				sprintf(buffer,"\tadd $t0, $t0, $t0");
 				affiche_texte(buffer,trace);
+
+				sprintf(buffer,"\tadd $t0, $t0, $t0");
+				affiche_texte(buffer,trace);
+
+				sprintf(buffer,"\tsw	$t1, v_%s($t0)",corps->u.affecte_.var->nom);
+				affiche_texte(buffer,trace);
+
 			}
-			if(tabsymboles.tab[rechercheExecutable(corps->u.affecte_.var->nom)].portee == P_VARIABLE_LOCALE){
-				sprintf(buffer,"\tsw $t%d, -%d($fp) \t#sauve la variable",current_register,8+tabsymboles.tab[rechercheExecutable(corps->u.affecte_.var->nom)].adresse);
-				affiche_texte(buffer,trace);
-			}
-			if(tabsymboles.tab[rechercheExecutable(corps->u.affecte_.var->nom)].portee == P_ARGUMENT){
-				sprintf(buffer,"\tsw $t%d, %d($fp) \t#sauve la variable",current_register,4+tabsymboles.tab[rechercheExecutable(corps->u.affecte_.var->nom)].adresse);
-				affiche_texte(buffer,trace);
+			else{
+				depile(current_register);
+
+				if(tabsymboles.tab[rechercheExecutable(corps->u.affecte_.var->nom)].portee == P_VARIABLE_GLOBALE){
+					sprintf(buffer,"\tsw $t%d, v_%s \t#sauve la variable",current_register,corps->u.affecte_.var->nom);
+					affiche_texte(buffer,trace);
+				}
+				if(tabsymboles.tab[rechercheExecutable(corps->u.affecte_.var->nom)].portee == P_VARIABLE_LOCALE){
+					sprintf(buffer,"\tsw $t%d, -%d($fp) \t#sauve la variable",current_register,8+tabsymboles.tab[rechercheExecutable(corps->u.affecte_.var->nom)].adresse);
+					affiche_texte(buffer,trace);
+				}
+				if(tabsymboles.tab[rechercheExecutable(corps->u.affecte_.var->nom)].portee == P_ARGUMENT){
+					sprintf(buffer,"\tsw $t%d, %d($fp) \t#sauve la variable",current_register,4+tabsymboles.tab[rechercheExecutable(corps->u.affecte_.var->nom)].adresse);
+					affiche_texte(buffer,trace);
+				}
 			}
 			break;
 		case siInst:
@@ -268,8 +288,8 @@ void analyse_n_instr(n_instr *corps){
 
 			//reg_1 = analyse_n_exp(corps->u.si_.test);
 			analyse_n_exp(corps->u.si_.test);
-			depile(reg_1);
-			sprintf(buffer,"\tbeq $t%d, $0, si%d",reg_1,etiquette_si);
+			depile(1);
+			sprintf(buffer,"\tbeq $t%d, $0, si%d",1,etiquette_si);
 			affiche_texte(buffer,trace);
 			analyse_n_instr(corps->u.si_.alors);
 			/* si pas de sinon pas besoin de jump par dessus la section sinon */
@@ -312,9 +332,32 @@ void analyse_n_instr(n_instr *corps){
 			break;
 		case appelInst:
 			analyser_n_appel(corps->u.appel);
+			sprintf(buffer,"\taddi $sp $sp 4\t#ignore valeur de retour");
+			affiche_texte(buffer,trace);
 			break;
 		case retourInst:
 			analyse_n_exp(corps->u.retour_.expression);
+			depile(1);
+			sprintf(buffer,"\tsw $t1, %d($fp)",(nb_param*4)+4);
+			affiche_texte(buffer,trace);
+			sprintf(buffer,"\tlw	$ra, 0($sp)	# depile vers registre");
+			affiche_texte(buffer,trace);
+
+			sprintf(buffer,"\taddi	$sp, $sp, 4");
+			affiche_texte(buffer,trace);
+
+			sprintf(buffer,"\tlw	$fp, 0($sp)	# depile vers registre");
+			affiche_texte(buffer,trace);
+
+			sprintf(buffer,"\taddi	$sp, $sp, 4");
+			affiche_texte(buffer,trace);
+
+			sprintf(buffer,"\tjr	$ra");
+			affiche_texte(buffer,trace);
+
+
+
+
 			break;
 		case ecrireInst:
 			//current_register = analyse_n_exp(corps->u.retour_.expression);
@@ -362,20 +405,38 @@ int analyse_n_exp(n_exp *exp){
 				printf("ERROR : variable %s mauvais type\n", exp->u.var->nom);
 				exit(1);
 			}
-			if(tabsymboles.tab[rechercheExecutable(exp->u.var->nom)].portee == P_VARIABLE_GLOBALE){
-				sprintf(buffer,"\tlw $t%d %s",nu_registre,exp->u.var->nom);
+
+			if(exp->u.var->type == indicee){
+				analyse_n_exp(exp->u.var->u.indicee_.indice);
+				depile(1);
+				sprintf(buffer,"\tadd $t1 $t1 $t1");
 				affiche_texte(buffer,trace);
-				empile(1);
+
+				sprintf(buffer,"\tadd $t1 $t1 $t1");
+				affiche_texte(buffer,trace);
+
+				sprintf(buffer,"\tlw $t2 v_%s($t1)",exp->u.var->nom);
+				affiche_texte(buffer,trace);
+
+
+				empile(2);
 			}
-			if(tabsymboles.tab[rechercheExecutable(exp->u.var->nom)].portee == P_VARIABLE_LOCALE){
-				sprintf(buffer,"\tlw $t%d -%d($fp)",1,8+tabsymboles.tab[rechercheExecutable(exp->u.var->nom)].adresse);
-				affiche_texte(buffer,trace);
-				empile(1);
-			}
-			if(tabsymboles.tab[rechercheExecutable(exp->u.var->nom)].portee == P_ARGUMENT){
-				sprintf(buffer,"\tlw $t%d, %d($fp) \t#sauve la variable",1,4+tabsymboles.tab[rechercheExecutable(exp->u.var->nom)].adresse);
-				affiche_texte(buffer,trace);
-				empile(1);
+			else{
+				if(tabsymboles.tab[rechercheExecutable(exp->u.var->nom)].portee == P_VARIABLE_GLOBALE){
+					sprintf(buffer,"\tlw $t%d v_%s",nu_registre,exp->u.var->nom);
+					affiche_texte(buffer,trace);
+					empile(1);
+				}
+				if(tabsymboles.tab[rechercheExecutable(exp->u.var->nom)].portee == P_VARIABLE_LOCALE){
+					sprintf(buffer,"\tlw $t%d -%d($fp)",1,8+tabsymboles.tab[rechercheExecutable(exp->u.var->nom)].adresse);
+					affiche_texte(buffer,trace);
+					empile(1);
+				}
+				if(tabsymboles.tab[rechercheExecutable(exp->u.var->nom)].portee == P_ARGUMENT){
+					sprintf(buffer,"\tlw $t%d, %d($fp) \t#sauve la variable",1,4+tabsymboles.tab[rechercheExecutable(exp->u.var->nom)].adresse);
+					affiche_texte(buffer,trace);
+					empile(1);
+				}
 			}
 			return nu_registre-1;
 
@@ -574,6 +635,8 @@ void analyser_n_appel(n_appel *appel){
 		printf("ERROR : nombre de parametres incorrect pour la fonction %s\n", appel->fonction);
 		exit(1);
 	}
+	sprintf(buffer,"\tsubi	$sp, $sp, 4\t# allocation valeur de retour");
+	affiche_texte(buffer,trace);
 
 	analyse_n_l_exp(appel->args);
 
