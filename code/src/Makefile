@@ -5,7 +5,7 @@ CCFLAGS = -Wall -ggdb -w -g
 
 OBJ = analyseur_lexical.o premiers.o suivants.o util.o syntabs.o affiche_arbre_abstrait.o creationTabSymb.o tabsymboles.o
 
-all: analyseurLL1
+all: analyseurLL1 analyseurLL1_asynt analyseurLL1_synt
 
 util: util.c
 	$(CC) $(CCFLAGS) -o util.o -c util.c
@@ -22,6 +22,13 @@ analyseur_lexical: analyseur_lexical.o
 analyseurLL1: analyseurLL1.c analyseurLL1.h $(OBJ)
 	$(CC) $(CCFLAGS) -o analyseurLL1 analyseurLL1.c $(OBJ)
 
+analyseurLL1_asynt: analyseurLL1_asynt.c analyseurLL1.h $(OBJ)
+	$(CC) $(CCFLAGS) -o analyseurLL1_asynt analyseurLL1_asynt.c $(OBJ)
+
+analyseurLL1_synt: analyseurLL1_synt.c analyseurLL1.h $(OBJ)
+	$(CC) $(CCFLAGS) -o analyseurLL1_synt analyseurLL1_synt.c $(OBJ)
+
+
 analyseur_lexical.o: analyseur_lexical.c analyseur_lexical.h
 	$(CC) $(CCFLAGS) -o analyseur_lexical.o -c analyseur_lexical.c
 
@@ -32,7 +39,7 @@ affiche_arbre_abstrait.o: affiche_arbre_abstrait.c syntabs.o util.o
 	$(CC) $(CCFLAGS) -o affiche_arbre_abstrait.o -c affiche_arbre_abstrait.c
 
 creationTabSymb.o: creationTabSymb.c syntabs.o util.o
-	$(CC) $(CCFLAGS) -o creationTabSymb.o -c creationTabSymb.c 
+	$(CC) $(CCFLAGS) -o creationTabSymb.o -c creationTabSymb.c
 
 tabsymboles.o: tabsymboles.c util.o
 	$(CC) $(CCFLAGS) -o tabsymboles.o -c tabsymboles.c util.o
