@@ -4,6 +4,7 @@ LIBS = -lm
 CCFLAGS = -Wall -ggdb -w -g
 
 OBJ = analyseur_lexical.o premiers.o suivants.o util.o syntabs.o affiche_arbre_abstrait.o creationTabSymb.o tabsymboles.o
+EXE = analyseurLL1 analyseurLL1_asynt analyseurLL1_synt
 
 all: analyseurLL1 analyseurLL1_asynt analyseurLL1_synt
 
@@ -50,4 +51,4 @@ tabsymboles.o: tabsymboles.c util.o
 
 clean:
 	- rm -f $(OBJ)
-	- rm -f test_yylex
+	- rm -f $(EXE)

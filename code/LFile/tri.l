@@ -5,7 +5,7 @@ initialiser()
     $tab[0] = 8;    $tab[1] = 6;    $tab[2] = 9;
     $tab[3] = 9;    $tab[4] = 4;    $tab[5] = 2;
     $tab[6] = 3;    $tab[7] = 1;    $tab[8] = 4;
-    $tab[9] = 5;    
+    $tab[9] = 5;
 }
 
 afficher( entier $n )
@@ -15,8 +15,8 @@ entier $i;
     tantque $i < $n faire {
         ecrire( $tab[ $i ] );
         $i = $i + 1;
-    }    
-    ecrire( 0 ); # marqueur fin de tableau         
+    }
+    ecrire( 0 ); # marqueur fin de tableau
 }
 
 echanger( entier $i, entier $j )
@@ -36,7 +36,7 @@ entier $echange, entier $j, entier $m;
     {
         $echange = 0;
         $j = 0;
-        tantque $j < $m - 1 faire 
+        tantque $j < $m - 1 faire
         {
             si $tab[ $j + 1 ] < $tab[ $j ] alors {
                 echanger( $j, $j + 1 );
@@ -44,8 +44,8 @@ entier $echange, entier $j, entier $m;
             }
             $j = $j + 1;
         }
-        $m = $m - 1;        
-    }    
+        $m = $m - 1;
+    }
 }
 
 main()

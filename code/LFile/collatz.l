@@ -1,4 +1,4 @@
-
+entier $resultat;
 collatz(entier $n){
   ecrire($n);
   si($n = 1)
@@ -18,5 +18,6 @@ collatz(entier $n){
 }
 
 main(){
-  ecrire(collatz(42));
+  $resultat = collatz(42);
+  ecrire($resultat);
 }

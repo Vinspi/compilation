@@ -1,5 +1,6 @@
 entier $a;
 main()
 {
-$a = 123;
+  $a = 123;
+  ecrire($a);
 }
