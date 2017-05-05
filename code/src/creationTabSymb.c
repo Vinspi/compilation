@@ -340,6 +340,8 @@ void analyse_n_instr(n_instr *corps){
 			depile(1);
 			sprintf(buffer,"\tsw $t1, %d($fp)",(nb_param*4)+4);
 			affiche_texte(buffer,trace);
+			sprintf(buffer,"\taddi $sp, $sp, %d",4*nb_var_locale);
+			affiche_texte(buffer,trace);
 			sprintf(buffer,"\tlw	$ra, 0($sp)	# depile vers registre");
 			affiche_texte(buffer,trace);
 

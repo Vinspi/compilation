@@ -1,10 +1,11 @@
 entier $a;
 
 asso1()
-entier $a;
+entier $a, entier $b, entier $c;
 {
   $a = 8-4*2;
   ecrire($a);
+  retour $a;
 }
 
 asso2()
